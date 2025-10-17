@@ -1,3 +1,6 @@
+# TODO: Calibrate the camera
+
+
 import cv2
 import json
 import numpy as np
@@ -27,7 +30,7 @@ detector = Detector(
     debug=False,
 )
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 if not cap.isOpened():
     print("Cannot access webcam.")
     exit()
