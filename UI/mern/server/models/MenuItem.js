@@ -15,9 +15,9 @@ const menuItemSchema = new mongoose.Schema({
     required: [true, "Item price is required"],
     min: [0, "Price must not be negative"],
   },
-  menu: {
+  sub: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Menu", //references which menu the item is found on
+    ref: "Subcategory", //references which subcategory the item is found under
     required: true,
   },
   ingredients: [

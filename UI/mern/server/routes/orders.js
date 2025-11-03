@@ -3,6 +3,7 @@ import Order from "../models/Order.js";
 import MenuItem from "../models/MenuItem.js";
 import Table from "../models/Table.js";
 import { auth } from "../middleware/auth.js";
+import { authOptional } from "../middleware/authOptional.js";
 import { admin } from "../middleware/admin.js";
 
 const router = express.Router();
@@ -14,6 +15,7 @@ router.get("/", auth, admin, async (req, res) => {
       .populate("user", "username")
       .populate("table", "name")
       .populate("waiter", "name")
+      .populate("menu", "name")
       .populate({path: "items.menuItem", select: "name price"})
       .sort({ placedAt: -1 });
 
@@ -30,6 +32,7 @@ router.get("/:id", auth, async (req, res) => {
       .populate("user", "username")
       .populate("table", "name")
       .populate("waiter", "name")
+      .populate("menu", "name")
       .populate({path: "items.menuItem", select: "name price"});
 
     if (!order) return res.status(404).json({ message: "Order not found" });
@@ -89,6 +92,7 @@ router.patch("/:id", auth, async (req, res) => {
       {path: "user", select: "username" },
       {path: "table", select: "name"},
       {path: "waiter", select: "name"},
+      {path: "menu", select: "name"},
       {path: "items.menuItem", select: "name price"}
     ]);
 

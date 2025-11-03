@@ -17,6 +17,7 @@ import menuItems from "./routes/menuItems.js";
 import menus from "./routes/menus.js";
 import orders from "./routes/orders.js";
 import robots from "./routes/robots.js";
+import subcategories from "./routes/subCategories.js";
 import tables from "./routes/tables.js";
 import users from "./routes/users.js";
 
@@ -30,7 +31,7 @@ app.get("/", (req, res) => {
   res.send("Server is running");
 });
 
-app.use(cors());
+app.use(cors({origin: "http://localhost:5173"}));
 app.use(express.json());
 
 app.use(helmet());  //secure HTTP headers
@@ -57,6 +58,7 @@ app.use("/menuItems", menuItems);
 app.use("/menus", menus);
 app.use("/orders", orders);
 app.use("/robots", robots);
+app.use("/subCategories", subcategories);
 app.use("/tables", tables);
 app.use("/users", users);
 

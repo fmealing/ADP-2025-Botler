@@ -28,6 +28,14 @@ menuSchema.index(
   { unique: true, collation: { locale: "en", strength: 2 } }
 );
 
+menuSchema.virtual("subcategories", {
+  ref: "Subcategory",          //Get categories for exact menu
+  localField: "_id",       
+  foreignField: "menu",     
+});
+
+menuSchema.set("toObject", { virtuals: true });
+menuSchema.set("toJSON", { virtuals: true });
 const Menu = mongoose.model("Menu", menuSchema);
 
 export default Menu;

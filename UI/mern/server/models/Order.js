@@ -14,6 +14,11 @@ const orderSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Robot", //robot handling the order
   },
+  menu: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Menu", //menu of order
+  },
+
   items: [
     {
       menuItem: {

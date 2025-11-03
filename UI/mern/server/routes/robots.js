@@ -1,6 +1,7 @@
 import express from "express";
 import Robot from "../models/Robot.js";
 import { auth } from "../middleware/auth.js";
+import { authOptional } from "../middleware/authOptional.js";
 import { admin } from "../middleware/admin.js";
 
 const router = express.Router();

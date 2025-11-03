@@ -4,9 +4,12 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
+
 import App from "./App";
-import Record from "./components/Record";
-import RecordList from "./components/RecordList";
+import WelcomePage from "./pages/user/Welcome.jsx";
+import MenuPage from "./pages/user/MenuSelect.jsx";
+import MenuItemsPage from "./pages/user/MenuItems.jsx";
+import TableSelectPage from "./pages/user/TableSelect.jsx";
 import "./index.css";
 
 const router = createBrowserRouter([
@@ -14,30 +17,11 @@ const router = createBrowserRouter([
     path: "/",
     element: <App />,
     children: [
-      {
-        path: "/",
-        element: <RecordList />,
-      },
-    ],
-  },
-  {
-    path: "/create",
-    element: <App />,
-    children: [
-      {
-        path: "/create",
-        element: <Record />,
-      },
-    ],
-  },
-  {
-    path: "/edit/:id",
-    element: <App />,
-    children: [
-      {
-        path: "/edit/:id",
-        element: <Record />,
-      },
+      { path: "/", element: <WelcomePage /> },
+      { path: "/menu", element: <MenuPage /> },
+      { path: "/menu/:menuId/table", element: <TableSelectPage /> },
+      { path: "/menu/:id", element: <MenuItemsPage /> },
+      { path: "/menu/:id/table/:tableId", element: <MenuItemsPage /> },
     ],
   },
 ]);

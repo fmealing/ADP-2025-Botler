@@ -3,8 +3,9 @@ import MenuItem from "../models/MenuItem.js";
 import Ingredient from "../models/Ingredient.js";
 import Allergen from "../models/Allergen.js";
 import { auth } from "../middleware/auth.js";
+import { authOptional } from "../middleware/authOptional.js";
 import { admin } from "../middleware/admin.js";
-import Menu from "../models/Menu.js";
+import Subcategory from "../models/SubCategory.js";
 
 const router = express.Router();
 
@@ -12,10 +13,10 @@ const router = express.Router();
 router.get("/", async(req,res) => {
   try{
     const menuItem = await MenuItem.find()
-    .populate("menu", "name isActive")
+    .populate({path: "sub",select: "name description parent", populate:{path: "parent", select: "name"}})
     .populate({path:"ingredients",select:"name allergens",populate:{path: "allergens", select: "name"}})
     .populate("allergens","name")
-    .sort({"menu": 1,"name": 1});
+    .sort({"sub": 1,"name": 1});
     res.status(200).json(menuItem);
   }
   catch(err){
@@ -27,7 +28,7 @@ router.get("/", async(req,res) => {
 router.get("/:id",async(req, res) =>{
   try{
     const menuItem = await MenuItem.findById(req.params.id)
-    .populate("menu", "name isActive")
+    .populate({path: "sub",select: "name description children", populate:{path: "children", select: "name description"}})
     .populate({path:"ingredients",select:"name allergens",populate:{path: "allergens", select: "name"}})
     .populate("allergens","name");
 
@@ -42,13 +43,13 @@ router.get("/:id",async(req, res) =>{
 //add new menu item
 router.post("/", auth, admin, async (req, res) => {
   try {
-    const { name, description, price, menu, ingredients = [], allergens = [], isAvailable } = req.body;
+    const { name, description, price, sub, ingredients = [], allergens = [], isAvailable } = req.body;
     
-    if(!name||!menu) return res.status(400).json({message: "Name and menu required"});
+    if(!name||!sub) return res.status(400).json({message: "Name and subcategory required"});
     
-    //check menu exists
-    const existing = await Menu.findById(menu);
-    if (!existing) return res.status(400).json({ message: "Menu not found" });
+    //check subcategory exists
+    const existing = await Subcategory.findById(sub);
+    if (!existing) return res.status(400).json({ message: "Subcategory not found" });
 
     //check price exists and is positive
     if (price === undefined || price < 0) {
@@ -71,7 +72,7 @@ router.post("/", auth, admin, async (req, res) => {
 
     const newMenuItem = new MenuItem({
       name: name.trim(),
-      menu,
+      sub,
       description,
       price,
       ingredients,
@@ -92,16 +93,16 @@ router.post("/", auth, admin, async (req, res) => {
 //update menu item
 router.patch("/:id", auth, admin, async (req, res) => {
   try {
-    const{name,description,price,menu,ingredients, allergens, isAvailable} = req.body;
+    const{name,description,price,sub,ingredients, allergens, isAvailable} = req.body;
      
-    //check menu exists
-    if(menu !== undefined){ //only if menu is being updated run
-      const existing = await Menu.findById(menu);
-      if (!existing) return res.status(400).json({ message: "Menu not found" });
+    //check subcategory exists
+    if(sub !== undefined){ //only if subcategory is being updated run
+      const existing = await Subcategory.findById(sub);
+      if (!existing) return res.status(400).json({ message: "Subcategory not found" });
     }
     //check price is being updated and is positive
     if(price!== undefined){
-      if (price < 0) return res.status(400).json({ message: "Price is must be positive" });
+      if (price < 0) return res.status(400).json({ message: "Price must be positive" });
     }
     //check ingredients exist
     if (ingredients !== undefined){
@@ -130,7 +131,7 @@ router.patch("/:id", auth, admin, async (req, res) => {
       req.body,
       { new: true, runValidators: true }
     )
-    .populate("menu", "name isActive")
+    .populate({path: "sub",select: "name description parent", populate:{path: "parent", select: "name"}})
     .populate({path:"ingredients",select:"name allergens",populate:{path: "allergens", select: "name"}})
     .populate("allergens","name");
 

@@ -1,6 +1,7 @@
 import express from "express";
 import Allergen from "../models/Allergen.js";
 import { auth } from "../middleware/auth.js";
+import { authOptional } from "../middleware/authOptional.js";
 import { admin } from "../middleware/admin.js";
 
 const router = express.Router();

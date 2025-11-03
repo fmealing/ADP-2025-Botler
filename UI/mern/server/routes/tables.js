@@ -1,14 +1,18 @@
 import express from "express";
 import Table from "../models/Table.js";
 import { auth } from "../middleware/auth.js";
+import { authOptional } from "../middleware/authOptional.js";
 import { admin } from "../middleware/admin.js";
 
 const router = express.Router();
 
 //get all tables
-router.get("/",auth, async(req,res) => {
+router.get("/",authOptional, async(req,res) => {
   try{
-    const tables = await Table.find();
+    const isStaff = req.user && ["admin","staff"].includes(req.user.role);
+    const projection = isStaff ? "_id tableNumber headCount isOccupied" : "_id tableNumber";
+
+    const tables = await Table.find({}, projection).sort({tableNumber:1});
     res.status(200).json(tables);
   }
   catch(err){
@@ -17,9 +21,12 @@ router.get("/",auth, async(req,res) => {
 });
 
 //get one table
-router.get("/:id",auth,async(req, res) =>{
+router.get("/:id",authOptional,async(req, res) =>{
   try{
-    const table = await Table.findById(req.params.id);
+    const isStaff = req.user && ["admin","staff"].includes(req.user.role);
+    const projection = isStaff ? "_id tableNumber headCount isOccupied" : "_id tableNumber";
+
+    const table = await Table.findById(req.params.id,projection);
     if (!table) return res.status(404).json({message: "Table not found"});
     res.status(200).json(table);
   }
@@ -27,6 +34,7 @@ router.get("/:id",auth,async(req, res) =>{
     res.status(500).json({message: "Error getting table", error: err.message});
   }
 });
+
 
 router.post("/", auth, admin, async(req,res)=>{
   try{
