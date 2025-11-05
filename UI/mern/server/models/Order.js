@@ -39,7 +39,7 @@ const orderSchema = new mongoose.Schema({
   ],
   status: {
     type: String, //Order status to display in user app
-    enum: ["Pending", "In-progress", "Completed", "Cancelled"],
+    enum: ["Pending", "In-progress", "Submitted", "Completed", "Cancelled", "Paid", "Archived"],
     default: "Pending",
   },
   totalPrice: {

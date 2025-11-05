@@ -1,36 +1,87 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Dialog } from "@headlessui/react";
 import { useNavigate, useParams } from "react-router-dom";
+import { updateOrderItems } from "../../utils/api";
+import { useLeaveConfirmation } from "../../hooks/useLeaveConfirmation.jsx";
+
 
 function MenuItemsPage() {
-  const { id } = useParams(); // menu ID
+  const { id, menuId, subId, tableId } = useParams();
   const navigate = useNavigate();
   const [menu, setMenu] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [order, setOrder] = useState([]);
+  const [breadcrumbs, setBreadcrumbs] = useState([]);
 
-  // Fetch menu + items
+  const orderId = localStorage.getItem("currentOrderId");
+  const { LeaveModal, InactivityModal, RequestLeave } = useLeaveConfirmation(orderId);
+
+
+
   useEffect(() => {
-    async function fetchMenu() {
+    async function fetchData() {
       try {
-        const res = await fetch(`http://localhost:5050/menus/${id}`);
+        const targetMenuId = id || menuId;
+        let res;
+        if (subId) {
+          res = await fetch(`http://localhost:5050/subcategories/${subId}`);
+        } else {
+          res = await fetch(`http://localhost:5050/menus/${targetMenuId}`);
+        }
+
         if (!res.ok) throw new Error("Failed to fetch menu");
         const data = await res.json();
         setMenu(data);
+
+        const crumbs = [];
+        if (data.menuName)
+          crumbs.push({ name: data.menuName, type: "menu", id: targetMenuId });
+        if (data.ancestors && data.ancestors.length > 0) {
+          data.ancestors.forEach((ancestor) =>
+            crumbs.push({ name: ancestor.name, type: "sub", id: ancestor._id })
+          );
+        }
+        if (data.name) crumbs.push({ name: data.name, type: "current" });
+        setBreadcrumbs(crumbs);
       } catch (err) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
     }
-    fetchMenu();
-  }, [id]);
 
-  const handleAddToOrder = (customizedItem) => {
-    setOrder((prev) => [...prev, customizedItem]);
-    setSelectedItem(null);
+    fetchData();
+  }, [id, menuId, subId]);
+
+  const handleAddToOrder = async (customizedItem) => {
+    if (!orderId) {
+      alert("No active order found. Please select a table first.");
+      return;
+    }
+
+    try {
+      await updateOrderItems(
+        orderId,
+        "add",
+        customizedItem.menuItem,
+        customizedItem.quantity,
+        customizedItem.specialInstructions
+      );
+      setOrder((prev) => [...prev, customizedItem]);
+      setSelectedItem(null);
+    } catch (err) {
+      alert("Failed to add item: " + err.message);
+    }
+  };
+
+  const handleBreadcrumbClick = (crumb) => {
+    if (crumb.type === "menu") {
+      navigate(`/menu/${crumb.id}/table/${tableId}`);
+    } else if (crumb.type === "sub") {
+      navigate(`/menu/${menuId || id}/table/${tableId}/sub/${crumb.id}`);
+    }
   };
 
   if (loading)
@@ -47,38 +98,91 @@ function MenuItemsPage() {
       </div>
     );
 
+  if (!menu) return <p className="text-center mt-10">No menu found</p>;
+
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-5">
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => {
+          if (subId) {
+            navigate(-1);
+          } else { RequestLeave(); }
+        }}
         className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 mb-6"
       >
         ← Back
       </button>
 
+      {breadcrumbs.length > 0 && (
+        <nav className="flex justify-center mb-6 text-gray-600 text-sm">
+          {breadcrumbs.map((crumb, index) => (
+            <span key={index}>
+              {crumb.type === "current" ? (
+                <span className="font-semibold text-indigo-700">
+                  {crumb.name}
+                </span>
+              ) : (
+                <button
+                  onClick={() => handleBreadcrumbClick(crumb)}
+                  className="hover:text-indigo-600 underline"
+                >
+                  {crumb.name}
+                </button>
+              )}
+              {index < breadcrumbs.length - 1 && (
+                <span className="mx-2 text-gray-400">›</span>
+              )}
+            </span>
+          ))}
+        </nav>
+      )}
+
       <h1 className="text-4xl font-bold text-center text-indigo-600 mb-10">
-        {menu.name}
+        {menu.name || "Subcategory"}
       </h1>
 
-      {/* Grid of menu items */}
-      <div className="max-w-4xl mx-auto grid gap-6 md:grid-cols-2">
-        {menu.items.map((item) => (
-          <div
-            key={item._id}
-            onClick={() => setSelectedItem(item)}
-            className="cursor-pointer border border-gray-200 rounded-2xl p-6 bg-white shadow-sm hover:shadow-lg transition"
-          >
-            <h2 className="text-2xl font-semibold mb-2">{item.name}</h2>
-            <p className="text-gray-600 mb-2">{item.description}</p>
-            <p className="font-semibold text-indigo-700">
-              Price: ${item.price?.toFixed(2) ?? "N/A"}
-            </p>
-          </div>
-        ))}
+      <div className="max-w-4xl mx-auto space-y-10">
+        {subId && menu.items ? (
+          <SubcategorySection
+            sub={menu}
+            onSelectItem={setSelectedItem}
+            tableId={tableId}
+            menuId={menuId || id}
+          />
+        ) : (
+          menu.subcategories?.map((sub) => (
+            <div
+              key={sub._id}
+              onClick={() =>
+                navigate(
+                  `/menu/${menu._id}/table/${menu.tableId || tableId || "none"}/sub/${sub._id}`
+                )
+              }
+              className="cursor-pointer bg-white rounded-xl p-6 shadow-sm border hover:shadow-md transition"
+            >
+              <h2 className="text-2xl font-semibold mb-2">{sub.name}</h2>
+              <p className="text-gray-600">{sub.description}</p>
+            </div>
+          ))
+        )}
       </div>
 
-      {/* Popup (Modal) */}
-      <Dialog open={!!selectedItem} onClose={() => setSelectedItem(null)} className="relative z-50">
+      {order.length > 0 && (
+        <div className="flex justify-center mt-10">
+          <button
+            onClick={() => navigate("/checkout")}
+            className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold text-lg hover:bg-green-700 transition"
+          >
+            Proceed to Checkout
+          </button>
+        </div>
+      )}
+
+      <Dialog
+        open={!!selectedItem}
+        onClose={() => setSelectedItem(null)}
+        className="relative z-50"
+      >
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           {selectedItem && (
@@ -108,11 +212,61 @@ function MenuItemsPage() {
           )}
         </div>
       </Dialog>
+
+      <LeaveModal />
+
     </div>
   );
 }
 
-/* ---------- Popup inner component ---------- */
+/* ---------- Subcategory Section ---------- */
+function SubcategorySection({ sub, onSelectItem, tableId, menuId }) {
+  const navigate = useNavigate();
+
+  return (
+    <div className="bg-white rounded-xl p-6 shadow-sm border">
+      <h2 className="text-2xl font-semibold mb-2">{sub.name}</h2>
+      <p className="text-gray-600 mb-4">{sub.description}</p>
+
+      {sub.items && sub.items.length > 0 && (
+        <div className="grid md:grid-cols-2 gap-4">
+          {sub.items.map((item) => (
+            <div
+              key={item._id}
+              onClick={() => onSelectItem(item)}
+              className="cursor-pointer border border-gray-200 rounded-lg p-4 hover:shadow transition"
+            >
+              <h3 className="text-xl font-semibold">{item.name}</h3>
+              <p className="text-gray-500">{item.description}</p>
+              <p className="font-semibold text-indigo-700 mt-2">
+                ${item.price?.toFixed(2)}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {sub.children && sub.children.length > 0 && (
+        <div className="mt-6 grid md:grid-cols-2 gap-4">
+          {sub.children.map((child) => (
+            <div
+              key={child._id}
+              onClick={() =>
+                navigate(`/menu/${menuId}/table/${tableId || "none"}/sub/${child._id}`)
+              }
+              className="cursor-pointer bg-gray-50 border rounded-xl p-5 hover:shadow transition"
+            >
+              <h4 className="text-xl font-semibold mb-2">{child.name}</h4>
+              <p className="text-gray-600">{child.description}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------- Ingredient Popup ---------- */
 function IngredientSelector({ ingredients, onConfirm, onCancel }) {
   const [removed, setRemoved] = useState([]);
   const [quantity, setQuantity] = useState(1);

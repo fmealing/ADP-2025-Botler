@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { getOrCreateOrder } from "../../utils/api"; // ✅ added
 
 function TableSelectPage() {
   const { menuId } = useParams();
@@ -59,12 +60,19 @@ function TableSelectPage() {
         {tables.map((table) => (
           <div
             key={table._id}
-            onClick={() => navigate(`/menu/${menuId}/table/${table._id}`)}
-            className={`cursor-pointer border rounded-2xl p-6 shadow-sm transition ${
-              table.isOccupied
-                ? "bg-gray-200 text-gray-500"
-                : "bg-white hover:shadow-lg"
-            }`}
+            onClick={async () => { // ✅ replaced broken inline handler
+              try {
+                const order = await getOrCreateOrder(table._id, menuId);
+                localStorage.setItem("currentOrderId", order._id);
+                navigate(`/menu/${menuId}/table/${table._id}`);
+              } catch (err) {
+                alert("Error creating order: " + err.message);
+              }
+            }}
+            className={`cursor-pointer border rounded-2xl p-6 shadow-sm transition ${table.isOccupied
+              ? "bg-gray-200 text-gray-500"
+              : "bg-white hover:shadow-lg"
+              }`}
           >
             <h2 className="text-2xl font-semibold mb-2">
               Table {table.tableNumber}
@@ -75,7 +83,7 @@ function TableSelectPage() {
           </div>
         ))}
       </div>
-    </div>
+    </div >
   );
 }
 
