@@ -26,9 +26,9 @@ function MenuItemsPage() {
         const targetMenuId = id || menuId;
         let res;
         if (subId) {
-          res = await fetch(`http://localhost:5050/subcategories/${subId}`);
+          res = await fetch(`${import.meta.env.VITE_API_URL}/subcategories/${subId}`);
         } else {
-          res = await fetch(`http://localhost:5050/menus/${targetMenuId}`);
+          res = await fetch(`${import.meta.env.VITE_API_URL}/menus/${targetMenuId}`);
         }
 
         if (!res.ok) throw new Error("Failed to fetch menu");
@@ -239,6 +239,7 @@ function MenuItemsPage() {
 }
 
 {/* ---------- Subcategory Section ---------- */}
+/* ---------- Subcategory Section ---------- */
 function SubcategorySection({ sub, onSelectItem, tableId, menuId }) {
   const navigate = useNavigate();
 
@@ -247,36 +248,81 @@ function SubcategorySection({ sub, onSelectItem, tableId, menuId }) {
       <h2 className="text-2xl font-semibold mb-2">{sub.name}</h2>
       <p className="text-gray-600 mb-4">{sub.description}</p>
 
+      {/* Menu Items with Images */}
       {sub.items && sub.items.length > 0 && (
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 gap-6">
           {sub.items.map((item) => (
             <div
               key={item._id}
               onClick={() => onSelectItem(item)}
-              className="cursor-pointer border border-gray-200 rounded-lg p-4 hover:shadow transition"
+              className="cursor-pointer bg-white border rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition transform hover:-translate-y-1"
             >
-              <h3 className="text-xl font-semibold">{item.name}</h3>
-              <p className="text-gray-500">{item.description}</p>
-              <p className="font-semibold text-indigo-700 mt-2">
-                ${item.price?.toFixed(2)}
-              </p>
+              {/* Item Image */}
+              {item.picture ? (
+                <div className="h-48 w-full overflow-hidden">
+                  <img
+                    src={item.picture}
+                    alt={item.name}
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+              ) : (
+                <div className="h-48 bg-gray-200 flex items-center justify-center text-gray-500">
+                  No Image
+                </div>
+              )}
+
+              {/* Item Info */}
+              <div className="p-4 text-center">
+                <h3 className="text-xl font-semibold text-indigo-700 mb-1">
+                  {item.name}
+                </h3>
+                <p className="text-gray-600 mb-2 line-clamp-2">{item.description}</p>
+                <p className="font-semibold text-indigo-700">
+                  ${item.price?.toFixed(2)}
+                </p>
+              </div>
             </div>
           ))}
         </div>
       )}
 
+      {/* Child Subcategories with Images */}
       {sub.children && sub.children.length > 0 && (
-        <div className="mt-6 grid md:grid-cols-2 gap-4">
+        <div className="mt-8 grid md:grid-cols-2 gap-6">
           {sub.children.map((child) => (
             <div
               key={child._id}
               onClick={() =>
                 navigate(`/menu/${menuId}/table/${tableId || "none"}/sub/${child._id}`)
               }
-              className="cursor-pointer bg-gray-50 border rounded-xl p-5 hover:shadow transition"
+              className="cursor-pointer bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition transform hover:-translate-y-1"
             >
-              <h4 className="text-xl font-semibold mb-2">{child.name}</h4>
-              <p className="text-gray-600">{child.description}</p>
+              {/* Child Subcategory Image */}
+              {child.picture? (
+                <div className="h-48 w-full overflow-hidden">
+                  <img
+                    src={child.picture}
+                    alt={child.name}
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+              ) : (
+                <div className="h-48 bg-gray-200 flex items-center justify-center text-gray-500">
+                  No Image
+                </div>
+              )}
+
+              {/* Child Info */}
+              <div className="p-5 text-center">
+                <h4 className="text-xl font-semibold text-indigo-700 mb-2">
+                  {child.name}
+                </h4>
+                <p className="text-gray-600 line-clamp-2">{child.description}</p>
+                <button className="mt-4 bg-indigo-600 text-white py-2 px-6 rounded-lg font-semibold hover:bg-indigo-700">
+                  View {child.name}
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -284,6 +330,7 @@ function SubcategorySection({ sub, onSelectItem, tableId, menuId }) {
     </div>
   );
 }
+
 
 {/* ---------- Ingredient Popup ---------- */}
 function IngredientSelector({ ingredients, onConfirm, onCancel }) {

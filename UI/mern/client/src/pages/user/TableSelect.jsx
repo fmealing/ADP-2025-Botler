@@ -12,7 +12,7 @@ function TableSelectPage() {
   useEffect(() => {
     async function fetchTables() {
       try {
-        const res = await fetch("http://localhost:5050/tables", {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/tables`, {
           headers: {
             Authorization: "Bearer " + localStorage.getItem("token"), // optional
           },

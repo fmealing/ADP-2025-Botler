@@ -11,7 +11,7 @@ export default function SubcategoryItemsPage() {
     useEffect(() => {
         async function fetchSubcategory() {
             try {
-                const res = await fetch(`http://localhost:5050/subcategories/${subId}`);
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/subcategories/${subId}`);
                 if (!res.ok) throw new Error("Failed to fetch subcategory");
                 const data = await res.json();
                 setSubcategory(data);

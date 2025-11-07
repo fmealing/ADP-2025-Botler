@@ -25,7 +25,7 @@ export function useLeaveConfirmation(orderId) {
         inactivityTimer.current = setTimeout(async () => {
             if (!orderId) return;
             try {
-                await fetch(`http://localhost:5050/orders/${orderId}`, {
+                await fetch(`${import.meta.env.VITE_API_URL}/orders/${orderId}`, {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ action: "clear" }),
@@ -79,7 +79,7 @@ export function useLeaveConfirmation(orderId) {
     // confirm leave modal
     const handleConfirmLeave = async () => {
         try {
-            await fetch(`http://localhost:5050/orders/${orderId}`, {
+            await fetch(`${import.meta.env.VITE_API_URL}/orders/${orderId}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ action: "clear" }),

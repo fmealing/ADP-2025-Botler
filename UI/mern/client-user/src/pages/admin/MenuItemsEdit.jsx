@@ -26,9 +26,9 @@ function MenuItemsPage() {
         const targetMenuId = id || menuId;
         let res;
         if (subId) {
-          res = await fetch(`http://localhost:5050/subcategories/${subId}`);
+          res = await fetch(`${import.meta.env.VITE_API_URL}/subcategories/${subId}`);
         } else {
-          res = await fetch(`http://localhost:5050/menus/${targetMenuId}`);
+          res = await fetch(`${import.meta.env.VITE_API_URL}/menus/${targetMenuId}`);
         }
 
         if (!res.ok) throw new Error("Failed to fetch menu");

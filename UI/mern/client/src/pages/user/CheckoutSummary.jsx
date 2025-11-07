@@ -17,7 +17,7 @@ function CheckoutSummaryPage() {
             }
 
             try {
-                const res = await fetch(`http://localhost:5050/orders/${orderId}`);
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/orders/${orderId}`);
                 if (!res.ok) throw new Error("Failed to load order");
                 const data = await res.json();
                 setOrder(data);
@@ -36,7 +36,7 @@ function CheckoutSummaryPage() {
         if (!orderId) return alert("No active order found.");
 
         try {
-            const res = await fetch(`http://localhost:5050/orders/${orderId}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/orders/${orderId}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ action: "remove", menuItem: menuItemId }),
@@ -55,7 +55,7 @@ function CheckoutSummaryPage() {
         if (!orderId) return alert("No active order found.");
 
         try {
-            const res = await fetch(`http://localhost:5050/orders/${orderId}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/orders/${orderId}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ action: "submit" }),
