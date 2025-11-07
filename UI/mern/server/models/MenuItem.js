@@ -36,6 +36,10 @@ const menuItemSchema = new mongoose.Schema({
     type: Boolean, //optional toggle for menu item unavailable
     default: true,
   },
+  picture: {
+  type: String,
+  default: "/images/menus/placeholder.jpg", //shown if no image is provided
+  },
 }, { timestamps: true });
 
 menuItemSchema.set("toObject", { virtuals: true });

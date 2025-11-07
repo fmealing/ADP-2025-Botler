@@ -150,23 +150,42 @@ function MenuItemsPage() {
             menuId={menuId || id}
           />
         ) : (
-          menu.subcategories?.map((sub) => (
-            <div
-              key={sub._id}
-              onClick={() =>
-                navigate(
-                  `/menu/${menu._id}/table/${menu.tableId || tableId || "none"}/sub/${sub._id}`
-                )
-              }
-              className="cursor-pointer bg-white rounded-xl p-6 shadow-sm border hover:shadow-md transition"
-            >
-              <h2 className="text-2xl font-semibold mb-2">{sub.name}</h2>
-              <p className="text-gray-600">{sub.description}</p>
-            </div>
-          ))
-        )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+  {menu.subcategories?.map((sub) => (
+    <div
+      key={sub._id}
+      onClick={() =>
+        navigate(
+          `/menu/${menu._id}/table/${menu.tableId || tableId || "none"}/sub/${sub._id}`
+        )
+      }
+      className="cursor-pointer bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition transform hover:-translate-y-1"
+    >
+      {/* Subcategory Image */}
+      {sub.picture && (
+        <div className="h-56 w-full overflow-hidden">
+          <img
+            src={sub.picture}
+            alt={sub.name}
+            className="object-cover w-full h-full"
+          />
+        </div>
+      )}
+      {/* Subcategory Info */}
+      <div className="p-6 text-center">
+        <h2 className="text-2xl font-semibold text-indigo-700 mb-2">
+          {sub.name}
+        </h2>
+        <p className="text-gray-600">{sub.description}</p>
+        <button className="mt-4 bg-indigo-600 text-white py-2 px-6 rounded-lg font-semibold hover:bg-indigo-700">
+          View {sub.name}
+        </button>
       </div>
-
+    </div>
+  ))}
+  </div>
+)}
+</div>
       {order.length > 0 && (
         <div className="flex justify-center mt-10">
           <button
@@ -219,7 +238,7 @@ function MenuItemsPage() {
   );
 }
 
-/* ---------- Subcategory Section ---------- */
+{/* ---------- Subcategory Section ---------- */}
 function SubcategorySection({ sub, onSelectItem, tableId, menuId }) {
   const navigate = useNavigate();
 
@@ -266,7 +285,7 @@ function SubcategorySection({ sub, onSelectItem, tableId, menuId }) {
   );
 }
 
-/* ---------- Ingredient Popup ---------- */
+{/* ---------- Ingredient Popup ---------- */}
 function IngredientSelector({ ingredients, onConfirm, onCancel }) {
   const [removed, setRemoved] = useState([]);
   const [quantity, setQuantity] = useState(1);
@@ -287,7 +306,7 @@ function IngredientSelector({ ingredients, onConfirm, onCancel }) {
   };
 
   return (
-    <div>
+    <main>
       <h3 className="font-semibold mb-2">Ingredients:</h3>
       <ul className="space-y-2 mb-4">
         {ingredients.length > 0 ? (
@@ -351,7 +370,7 @@ function IngredientSelector({ ingredients, onConfirm, onCancel }) {
           Add to Order
         </button>
       </div>
-    </div>
+    </main>
   );
 }
 

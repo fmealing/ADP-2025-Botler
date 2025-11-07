@@ -27,6 +27,8 @@ const PORT = process.env.PORT || 5050;
 dotenv.config();
 const app = express();
 
+app.use("/images", express.static("public/images"));
+
 app.get("/", (req, res) => {
   res.send("Server is running");
 });

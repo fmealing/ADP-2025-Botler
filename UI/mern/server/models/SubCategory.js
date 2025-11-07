@@ -17,6 +17,10 @@ const subSchema = new mongoose.Schema({
     ref: "Menu", 
     required: true,
   },
+  picture: {
+  type: String,
+  default: "/images/menus/placeholder.jpg", //shown if no image is provided
+  },
   parent: {
     type: mongoose.Schema.Types.ObjectId, //Subcategory it is a part of
     ref: "Subcategory", //e.g. Main menu -> drinks subcategory -> white wine subcategory

@@ -5,7 +5,7 @@ function WelcomePage() {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-      <h1 className="text-5xl font-bold mb-6">Welcome to GyrosGuys</h1>
+      <h1 className="text-5xl font-bold mb-6">Welcome to Your Restaurant</h1>
       <p className="text-lg mb-10 text-center max-w-md">
         Discover our menus and order easily through your smart system.
       </p>
