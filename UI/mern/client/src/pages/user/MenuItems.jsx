@@ -165,7 +165,7 @@ function MenuItemsPage() {
       {sub.picture && (
         <div className="h-56 w-full overflow-hidden">
           <img
-            src={sub.picture}
+            src={`${import.meta.env.VITE_API_URL}${sub.picture}`}
             alt={sub.name}
             className="object-cover w-full h-full"
           />
@@ -261,7 +261,7 @@ function SubcategorySection({ sub, onSelectItem, tableId, menuId }) {
               {item.picture ? (
                 <div className="h-48 w-full overflow-hidden">
                   <img
-                    src={item.picture}
+                    src={`${import.meta.env.VITE_API_URL}${item.picture}`}
                     alt={item.name}
                     className="object-cover w-full h-full"
                   />
@@ -302,7 +302,7 @@ function SubcategorySection({ sub, onSelectItem, tableId, menuId }) {
               {child.picture? (
                 <div className="h-48 w-full overflow-hidden">
                   <img
-                    src={child.picture}
+                    src={`${import.meta.env.VITE_API_URL}${child.picture}`}
                     alt={child.name}
                     className="object-cover w-full h-full"
                   />
