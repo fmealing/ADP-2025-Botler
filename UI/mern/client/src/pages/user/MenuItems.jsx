@@ -6,7 +6,7 @@ import { useLeaveConfirmation } from "../../hooks/useLeaveConfirmation.jsx";
 
 
 function MenuItemsPage() {
-  const { id, menuId, subId, tableId } = useParams();
+  const { id, menuId, subId, tableId } = useParams(); 
   const navigate = useNavigate();
   const [menu, setMenu] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -15,7 +15,12 @@ function MenuItemsPage() {
   const [order, setOrder] = useState([]);
   const [breadcrumbs, setBreadcrumbs] = useState([]);
 
-  const orderId = localStorage.getItem("currentOrderId");
+  const [orderId, setOrderId] = useState(null);
+
+  useEffect(() => {
+  const storedId = localStorage.getItem("currentOrderId");
+    if (storedId) setOrderId(storedId);
+  }, []);
   const { LeaveModal, InactivityModal, RequestLeave } = useLeaveConfirmation(orderId);
 
 
