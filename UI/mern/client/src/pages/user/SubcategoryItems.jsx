@@ -75,7 +75,7 @@ export default function SubcategoryItemsPage() {
                                 <h2 className="text-2xl font-semibold mb-2">{item.name}</h2>
                                 <p className="text-gray-600 mb-2">{item.description}</p>
                                 <p className="font-semibold text-indigo-700">
-                                    Price: ${item.price?.toFixed(2) ?? "N/A"}
+                                    Price: £{item.price?.toFixed(2) ?? "N/A"}
                                 </p>
                             </div>
                         ))}

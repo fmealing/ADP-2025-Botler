@@ -1,0 +1,33 @@
+cat > .gitignore << 'EOF'
+# macOS stuff
+.DS_Store
+*/.DS_Store
+**/.DS_Store
+
+# Node - installed by running npm install
+node_modules/
+
+# Env files (secrets)
+.env
+config.env
+server/.env
+server/config.env
+client/.env
+
+# Build output
+dist/
+build/
+client/dist/
+server/dist/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor/OS
+.vscode/
+.idea/
+EOF

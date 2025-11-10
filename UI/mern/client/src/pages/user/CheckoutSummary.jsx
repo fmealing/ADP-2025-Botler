@@ -124,7 +124,7 @@ function CheckoutSummaryPage() {
                                 </div>
                                 <div className="flex items-center space-x-3">
                                     <p className="text-indigo-600 font-semibold">
-                                        ${(item.menuItem?.price * item.quantity).toFixed(2)}
+                                        £{(item.menuItem?.price * item.quantity).toFixed(2)}
                                     </p>
                                     <button
                                         onClick={() => handleRemoveItem(item.menuItem._id)}
@@ -142,7 +142,7 @@ function CheckoutSummaryPage() {
 
                 <div className="flex justify-between text-xl font-semibold">
                     <span>Total:</span>
-                    <span>${order.totalPrice?.toFixed(2)}</span>
+                    <span>£{order.totalPrice?.toFixed(2)}</span>
                 </div>
 
                 <div className="flex justify-end mt-8">

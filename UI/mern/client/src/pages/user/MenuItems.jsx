@@ -165,7 +165,8 @@ function MenuItemsPage() {
       {sub.picture && (
         <div className="h-56 w-full overflow-hidden">
           <img
-            src={`${import.meta.env.VITE_API_URL}${sub.picture}`}
+            //src={`${import.meta.env.VITE_API_URL}${sub.picture}`} if pictures in backend
+            src = {sub.picture}
             alt={sub.name}
             className="object-cover w-full h-full"
           />
@@ -212,7 +213,7 @@ function MenuItemsPage() {
 
               <p className="text-gray-600 mb-3">{selectedItem.description}</p>
               <p className="text-indigo-700 font-semibold mb-6">
-                ${selectedItem.price?.toFixed(2)}
+                £{selectedItem.price?.toFixed(2)}
               </p>
 
               <IngredientSelector
@@ -261,7 +262,8 @@ function SubcategorySection({ sub, onSelectItem, tableId, menuId }) {
               {item.picture ? (
                 <div className="h-48 w-full overflow-hidden">
                   <img
-                    src={`${import.meta.env.VITE_API_URL}${item.picture}`}
+                    //src={`${import.meta.env.VITE_API_URL}${item.picture}`} //if fetching picture from backend
+                    src = {item.picture}
                     alt={item.name}
                     className="object-cover w-full h-full"
                   />
@@ -279,7 +281,7 @@ function SubcategorySection({ sub, onSelectItem, tableId, menuId }) {
                 </h3>
                 <p className="text-gray-600 mb-2 line-clamp-2">{item.description}</p>
                 <p className="font-semibold text-indigo-700">
-                  ${item.price?.toFixed(2)}
+                  £{item.price?.toFixed(2)}
                 </p>
               </div>
             </div>
@@ -302,7 +304,8 @@ function SubcategorySection({ sub, onSelectItem, tableId, menuId }) {
               {child.picture? (
                 <div className="h-48 w-full overflow-hidden">
                   <img
-                    src={`${import.meta.env.VITE_API_URL}${child.picture}`}
+                    //src={`${import.meta.env.VITE_API_URL}${child.picture}`} //if getting image from backend
+                    src = {child.picture}
                     alt={child.name}
                     className="object-cover w-full h-full"
                   />
