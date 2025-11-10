@@ -63,9 +63,8 @@ function TableSelectPage() {
             onClick={async () => { // ✅ replaced broken inline handler
               try {
                 const order = await getOrCreateOrder(table._id, menuId);
-                window.dispatchEvent(new Event("storage"));
-
                 localStorage.setItem("currentOrderId", order._id);
+                window.dispatchEvent(new Event("storage"));
                 //pause for bug fix
                 await new Promise((resolve) => setTimeout(resolve, 100));
                 navigate(`/menu/${menuId}/table/${table._id}`);
