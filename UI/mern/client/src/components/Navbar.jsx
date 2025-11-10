@@ -8,6 +8,8 @@ function Navbar({ RequestLeave }) {
 
   //botler click (return to welcome screen)
   const handleHomeClick = () => {
+    console.log("%c[Navbar click]", "color: blue; font-weight: bold;", "RequestLeave type:", typeof RequestLeave, "orderId:", orderId);
+
     const currentPath = location.pathname;
 
     const isWelcome = currentPath === "/";

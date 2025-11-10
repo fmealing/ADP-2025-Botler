@@ -4,6 +4,8 @@ import { Dialog } from "@headlessui/react";
 import { useNavigate } from "react-router-dom";
 
 export function useLeaveConfirmation(orderId) {
+    console.log("%cuseLeaveConfirmation init:", "color: orange; font-weight: bold", orderId);
+
     const navigate = useNavigate();
     const [showConfirm, setShowConfirm] = useState(false);
     const [showInactivity, setShowInactivity] = useState(false);
@@ -152,11 +154,16 @@ export function useLeaveConfirmation(orderId) {
     );
 
     const RequestLeave = (source = "default") => {
+        console.log("%c[RequestLeave called]", "color: purple; font-weight: bold;", { orderId, source });
+
         if (!orderId) return;
         setLeaveSource(source);
         setShowConfirm(true);
+        console.log("%cRequestLeave called:", "color: purple; font-weight: bold", { orderId, source });
+
     };
 
 
     return { LeaveModal, InactivityModal, RequestLeave };
 }
+

@@ -108,6 +108,7 @@ function MenuItemsPage() {
     <div className="min-h-screen bg-gray-50 py-10 px-5">
       <button
         onClick={() => {
+           console.log("%c[Back button click]", "color: green; font-weight: bold;", "RequestLeave type:", typeof RequestLeave);
           if (subId) {
             navigate(-1);
           } else { RequestLeave(); }

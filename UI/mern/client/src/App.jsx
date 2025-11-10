@@ -7,29 +7,42 @@ const App = () => {
   // initialise orderId for global leave confirmation
   const [orderId, setOrderId] = useState(localStorage.getItem("currentOrderId"));
 
-  // keep orderId synced with localStorage changes (for multi-tab updates)
+  // keep orderId synced with localStorage changes (for multi-tab and same-tab updates)
   useEffect(() => {
     const updateOrderId = () => {
       setOrderId(localStorage.getItem("currentOrderId"));
     };
+
+    // listen for updates from other tabs
     window.addEventListener("storage", updateOrderId);
-    return () => window.removeEventListener("storage", updateOrderId);
+
+    // listen for updates in the same tab
+    const originalSetItem = localStorage.setItem;
+    localStorage.setItem = function (key, value) {
+      originalSetItem.apply(this, arguments);
+      if (key === "currentOrderId") updateOrderId();
+    };
+
+    return () => {
+      window.removeEventListener("storage", updateOrderId);
+      localStorage.setItem = originalSetItem; // restore default
+    };
   }, []);
 
-  // mount the global leave confirmation hook only when orderId exists
-  const leave = orderId ? useLeaveConfirmation(orderId) : null;
+  // always mount the hook (it internally handles missing orderId)
+  const { LeaveModal, InactivityModal, RequestLeave } = useLeaveConfirmation(orderId);
 
   return (
     <div className="w-full p-6">
       {/* global navigation bar with Botler button */}
-      <Navbar RequestLeave={leave?.RequestLeave} />
+      <Navbar RequestLeave={RequestLeave} />
 
       {/* global modals for leave confirmation and inactivity warning */}
-      {leave && <leave.LeaveModal />}
-      {leave && <leave.InactivityModal />}
+      <LeaveModal />
+      <InactivityModal />
 
       {/* nested routes render here */}
-      <Outlet context={{ RequestLeave: leave?.RequestLeave }} />
+      <Outlet context={{ RequestLeave }} />
     </div>
   );
 };
