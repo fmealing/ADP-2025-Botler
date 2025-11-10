@@ -1,11 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import { Dialog } from "@headlessui/react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useOutletContext } from "react-router-dom";
 import { updateOrderItems } from "../../utils/api";
-import { useLeaveConfirmation } from "../../hooks/useLeaveConfirmation.jsx";
+
 
 
 function MenuItemsPage() {
+  const {RequestLeave} = useOutletContext();
   const { id, menuId, subId, tableId } = useParams(); 
   const navigate = useNavigate();
   const [menu, setMenu] = useState(null);
@@ -21,8 +22,6 @@ function MenuItemsPage() {
   const storedId = localStorage.getItem("currentOrderId");
     if (storedId) setOrderId(storedId);
   }, []);
-  const { LeaveModal, InactivityModal, RequestLeave } = useLeaveConfirmation(orderId);
-
 
 
   useEffect(() => {
@@ -237,8 +236,6 @@ function MenuItemsPage() {
           )}
         </div>
       </Dialog>
-
-      <LeaveModal />
 
     </div>
   );

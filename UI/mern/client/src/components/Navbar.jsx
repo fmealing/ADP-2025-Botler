@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useLeaveConfirmation } from "../hooks/useLeaveConfirmation";
-/*import { ReactComponent as logo } from '../assets/logo.pdf';
-<img src={logo} alt="Botler Logo" className="h-8 w-8 mr-2" />*/
 
-function Navbar() {
+function Navbar({ RequestLeave }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [orderId, setOrderId] = useState(localStorage.getItem("currentOrderId"));
-  const { LeaveModal, RequestLeave } = useLeaveConfirmation(orderId);
 
   //botler click (return to welcome screen)
   const handleHomeClick = () => {
@@ -34,13 +30,25 @@ function Navbar() {
   };
 
   // keep orderId synced with localStorage changes
-  useEffect(() => {
+    useEffect(() => {
     const updateOrderId = () => {
       setOrderId(localStorage.getItem("currentOrderId"));
     };
+
     window.addEventListener("storage", updateOrderId);
-    return () => window.removeEventListener("storage", updateOrderId);
+
+    const originalSetItem = localStorage.setItem;
+    localStorage.setItem = function (key, value) {
+      originalSetItem.apply(this, arguments);
+      if (key === "currentOrderId") updateOrderId();
+    };
+
+    return () => {
+      window.removeEventListener("storage", updateOrderId);
+      localStorage.setItem = originalSetItem; // restore default
+    };
   }, []);
+
 
   return (
     <>
@@ -52,10 +60,7 @@ function Navbar() {
           Botler
         </button>
       </nav>
-
-      <div id="global-leave-modal">
-        <LeaveModal />
-      </div>
+      {/* global modal handled in App.jsx */}
     </>
   );
 }
