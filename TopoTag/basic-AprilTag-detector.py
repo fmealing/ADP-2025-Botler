@@ -2,7 +2,7 @@ import cv2
 from pupil_apriltags import Detector
 
 # --- CONFIGURATION ---
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 if not cap.isOpened():
     print("Cannot access webcam.")
     exit()
