@@ -1,61 +1,45 @@
+import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useLeaveConfirmation } from "../hooks/useLeaveConfirmation";
 
-function Navbar() {
+function UserNavbar() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const [orderId, setOrderId] = useState(localStorage.getItem("currentOrderId"));
-  const { LeaveModal, RequestLeave } = useLeaveConfirmation(orderId);
+  const [user, setUser] = useState(null);
 
-  //botler click (return to welcome screen)
-  const handleHomeClick = () => {
-    const currentPath = location.pathname;
-
-    const isWelcome = currentPath === "/";
-    const isLogin = currentPath === "/login";
-    //const isTableSelect = /^\/menu\/[^/]+\/table$/.test(currentPath);
-    //const isMenuItems = /^\/menu\/[^/]+\/table\/[^/]+$/.test(currentPath);
-
-    //if on menu or table select no popup
-    if (isWelcome || isMainMenu || isTableSelect) {
-      navigate("/");
-      return;
-    }
-
-    //show popup if order exists
-    if (orderId) {
-      RequestLeave("navbar"); // will handle clearing and redirect inside hook
-    } else {
-      navigate("/"); // if no order, just go home
-    }
-  };
-
-  // keep orderId synced with localStorage changes
   useEffect(() => {
-    const updateOrderId = () => {
-      setOrderId(localStorage.getItem("currentOrderId"));
-    };
-    window.addEventListener("storage", updateOrderId);
-    return () => window.removeEventListener("storage", updateOrderId);
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
-  return (
-    <>
-      <nav className="flex justify-between p-4 bg-indigo-600 text-white">
-        <button
-          onClick={navigate("/")}
-          className="font-bold text-lg hover:text-indigo-200 transition"
-        >
-          Botler
-        </button>
-      </nav>
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/pages/admin/login");
+  };
 
-      <div id="global-leave-modal">
-        <LeaveModal />
-      </div>
-    </>
+  return (
+    <nav className="flex justify-between items-center bg-indigo-600 text-white px-6 py-3 shadow-md">
+      <button
+        onClick={() => navigate("/pages/admin/control")}
+        className="text-xl font-bold hover:text-indigo-200 transition"
+      >
+        Botler Control
+      </button>
+
+      {user && (
+        <div className="flex items-center gap-6">
+          <span className="text-sm font-medium">
+            {user.username} ({user.role})
+          </span>
+          <button
+            onClick={handleLogout}
+            className="bg-white text-indigo-600 font-semibold px-3 py-1 rounded-xl hover:bg-indigo-100 transition"
+          >
+            Logout
+          </button>
+        </div>
+      )}
+    </nav>
   );
 }
 
-export default Navbar;
+export default UserNavbar;
