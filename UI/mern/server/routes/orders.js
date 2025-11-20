@@ -9,11 +9,14 @@ import { admin } from "../middleware/admin.js";
 const router = express.Router();
 
 //get all orders
-router.get("/", auth, admin, async (req, res) => {
+router.get("/", auth, async (req, res) => {
   try {
-    const orders = await Order.find()
+    let orders;
+
+    if (req.user?.role === "admin"){
+    orders = await Order.find()
       .populate("user", "username")
-      .populate("table", "name")
+      .populate("table", "tableNumber")
       .populate("waiter", "name")
       .populate("menu", "name")
       .populate({
@@ -23,9 +26,30 @@ router.get("/", auth, admin, async (req, res) => {
           populate: { path: "allergens", select: "name" }
         }
       })
-      .sort({ placedAt: -1 });
+      .sort({ createdAt: -1 });
+      return res.status(200).json(orders);
+    } 
+    
+    orders = await Order.find()
+      .populate("table", "tableNumber")
+      .populate("waiter", "name")
+      .populate("menu", "name")
+      .sort({ createdAt: -1 });
 
-    res.status(200).json(orders);
+    const limitedOrders = orders.map((order) => ({
+      _id: order._id,
+      status: order.status,
+      table: order.table,
+      menu: order.menu,
+      waiter: order.waiter,
+      totalPrice: order.totalPrice,
+      placedAt: order.placedAt,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt
+    }));
+    
+    return res.status(200).json(limitedOrders);
+  
   } catch (err) {
     res.status(500).json({ message: "Error fetching orders", error: err.message });
   }
