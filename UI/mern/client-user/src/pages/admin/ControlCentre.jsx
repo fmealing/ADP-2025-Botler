@@ -14,16 +14,16 @@ function ControlCentre() {
 
   // Define accessible links by role
   const baseLinks = [
-    { label: "Help", path: "/user/help" },
-    { label: "Order History", path: "/user/history" },
-    { label: "Track Robots", path: "/user/tracker" },
-    { label: "Assign Tables", path: "/user/assign" },
+    { label: "Help", path: "/pages/admin/help" },
+    { label: "Order History", path: "/pages/admin/history" },
+    { label: "Track Robots", path: "/pages/admin/tracker" },
+    { label: "Assign Tables", path: "/pages/admin/assign" },
   ];
 
   const adminLinks = [
-    { label: "Edit Menu Items", path: "/user/itemEdits" },
-    { label: "Edit Menus", path: "/user/menusEdit" },
-    { label: "Manage Users", path: "/user/users" },
+    { label: "Edit Menu Items", path: "/pages/admin/itemEdits" },
+    { label: "Edit Menus", path: "/pages/admin/menusEdit" },
+    { label: "Manage Users", path: "/pages/admin/users" },
   ];
 
   const links = user.role === "admin" ? [...baseLinks, ...adminLinks] : baseLinks;
@@ -31,7 +31,7 @@ function ControlCentre() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    navigate("/user/login");
+    navigate("/pages/admin/login");
   };
 
   return (

@@ -29,12 +29,11 @@ function LoginUser() {
         return;
       }
 
-      // ✅ Save token and user info to localStorage
+      // keep token and user info in localStorage
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      // ✅ Redirect to dashboard or welcome page
-      navigate("/user/users"); // you can change this to any admin page
+      navigate("/pages/admin/control"); // you can change this to any admin page
     } catch (err) {
       console.error("Login error:", err);
       setError("Server error. Please try again later.");

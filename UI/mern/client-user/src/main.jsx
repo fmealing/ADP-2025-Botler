@@ -12,7 +12,7 @@ import TrackRobits from "./pages/admin/RobotTrack.jsx";
 import AssignTables from "./pages/admin/TableAssign.jsx";
 import EditUsers from "./pages/admin/UserEdit.jsx";
 import WelcomePageUser from "./pages/admin/WelcomeUser.jsx";
-import ControlCentre from "./pages/admin/ControlCentre.jsx"; // ✅ new import
+import ControlCentre from "./pages/admin/ControlCentre.jsx";
 
 import "./index.css";
 

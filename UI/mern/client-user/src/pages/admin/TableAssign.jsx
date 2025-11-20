@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getOrCreateOrder } from "../../utils/api"; // ✅ added
+import { getOrCreateOrder } from "../../utils/api"; 
 
 function TableSelectPage() {
   const { menuId } = useParams();
@@ -8,6 +8,10 @@ function TableSelectPage() {
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedTable, setSelectedTable] = useState(null);
+  const [headCount, setHeadCount] = useState(1);
+  const [showSeatModal, setShowSeatModal] = useState(false);
+
 
   useEffect(() => {
     async function fetchTables() {
@@ -43,6 +47,41 @@ function TableSelectPage() {
       </div>
     );
 
+async function handleSeatTable() {
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/tables/${selectedTable._id}/seat`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
+        body: JSON.stringify({
+          headCount,
+          menu: menuId,
+        }),
+      }
+    );
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+
+    // Save order ID
+    localStorage.setItem("currentOrderId", data.order._id);
+
+    setShowSeatModal(false);
+
+    // Navigate to menu
+    navigate(`/menu/${menuId}/table/${selectedTable._id}`);
+  } catch (err) {
+    alert("Error seating table: " + err.message);
+  }
+}
+
+
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-5">
       <button
@@ -55,12 +94,55 @@ function TableSelectPage() {
       <h1 className="text-4xl font-bold text-center text-indigo-600 mb-10">
         Select Your Table
       </h1>
+      {showSeatModal && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-xl shadow-xl w-80">
+      <h2 className="text-xl font-bold mb-3 text-indigo-700">
+        Seat Table {selectedTable.tableNumber}
+      </h2>
+
+      <label className="block mb-3">
+        <span className="font-semibold">Head Count:</span>
+        <input
+          type="number"
+          min="1"
+          value={headCount}
+          onChange={(e) => setHeadCount(Number(e.target.value))}
+          className="w-full border p-2 rounded-lg mt-1"
+        />
+      </label>
+
+      <div className="flex justify-end gap-3 mt-4">
+        <button
+          onClick={() => setShowSeatModal(false)}
+          className="px-4 py-2 bg-gray-300 rounded-lg"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={() => {
+            if (table.isOccupied) {
+            alert("This table is already occupied.");
+            return;
+            }
+          setSelectedTable(table);
+          setShowSeatModal(true);
+          }}
+          className="px-4 py-2 bg-indigo-600 text-white rounded-lg">
+          Seat Table
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 
       <div className="max-w-3xl mx-auto grid gap-6 md:grid-cols-3">
         {tables.map((table) => (
           <div
             key={table._id}
-            onClick={async () => { // ✅ replaced broken inline handler
+            onClick={async () => {
               try {
                 const order = await getOrCreateOrder(table._id, menuId);
                 localStorage.setItem("currentOrderId", order._id);
