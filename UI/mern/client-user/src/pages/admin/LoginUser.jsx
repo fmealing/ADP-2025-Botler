@@ -15,7 +15,7 @@ function LoginUser() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5050/users/login", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/users/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -80,25 +80,14 @@ function LoginUser() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3 rounded-lg font-semibold text-white transition ${
-              loading
-                ? "bg-indigo-300 cursor-not-allowed"
-                : "bg-indigo-600 hover:bg-indigo-700"
-            }`}
+            className={`w-full py-3 rounded-lg font-semibold text-white transition ${loading
+              ? "bg-indigo-300 cursor-not-allowed"
+              : "bg-indigo-600 hover:bg-indigo-700"
+              }`}
           >
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
-
-        <p className="text-sm text-center mt-6 text-gray-600">
-          Don’t have an account?{" "}
-          <button
-            onClick={() => navigate("/user/register")}
-            className="text-indigo-600 font-semibold hover:underline"
-          >
-            Register
-          </button>
-        </p>
       </div>
     </div>
   );

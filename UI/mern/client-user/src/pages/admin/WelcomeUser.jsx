@@ -10,7 +10,7 @@ function WelcomePageUser() {
         View your Botler waiters, add new users, edit menus, and more
       </p>
       <button
-        onClick={() => nav("/login")}
+        onClick={() => nav("login")}
         className="bg-white text-indigo-600 px-8 py-3 rounded-2xl font-semibold text-lg hover:bg-indigo-100 transition"
       >
         Start

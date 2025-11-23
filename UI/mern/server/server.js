@@ -9,7 +9,7 @@ import winston from "winston";
 import rateLimit from "express-rate-limit";
 import mongoSanitize from "express-mongo-sanitize";
 import xss from "xss-clean";
-import {removeId} from "./middleware/deleteId.js";
+import { removeId } from "./middleware/deleteId.js";
 
 import allergens from "./routes/allergens.js";
 import ingredients from "./routes/ingredients.js";
@@ -20,6 +20,7 @@ import robots from "./routes/robots.js";
 import subcategories from "./routes/subCategories.js";
 import tables from "./routes/tables.js";
 import users from "./routes/users.js";
+import robotHistories from "./routes/robotHistories.js";
 
 import "./db/connection.js";
 
@@ -65,6 +66,7 @@ app.use("/robots", robots);
 app.use("/subCategories", subcategories);
 app.use("/tables", tables);
 app.use("/users", users);
+app.use("/robot-history", robotHistories);
 
 //winston logger
 const logger = winston.createLogger({

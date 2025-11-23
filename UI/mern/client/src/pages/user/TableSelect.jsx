@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getOrCreateOrder } from "../../utils/api"; // ✅ added
+import { getOrCreateOrder } from "../../utils/api"; //
 
 function TableSelectPage() {
   const { menuId } = useParams();
@@ -60,7 +60,7 @@ function TableSelectPage() {
         {tables.map((table) => (
           <div
             key={table._id}
-            onClick={async () => { // ✅ replaced broken inline handler
+            onClick={async () => {
               try {
                 const order = await getOrCreateOrder(table._id, menuId);
                 localStorage.setItem("currentOrderId", order._id);

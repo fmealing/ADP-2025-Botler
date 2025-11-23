@@ -1,176 +1,281 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { getOrCreateOrder } from "../../utils/api";
+import { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 
-function TableSelectPage() {
-  const { menuId } = useParams();
+function OrderHistory() {
   const navigate = useNavigate();
 
-  const [tables, setTables] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const [selectedTable, setSelectedTable] = useState(null);
-  const [headCount, setHeadCount] = useState(1);
-  const [showSeatModal, setShowSeatModal] = useState(false);
+  const [user, setUser] = useState(null);
 
-  const user = JSON.parse(localStorage.getItem("user"));
-  const isStaff = user?.role === "staff" || user?.role === "admin";
+  // Controls
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("newest");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  // Pagination
+  const [page, setPage] = useState(1);
+  const PER_PAGE = 10;
 
   useEffect(() => {
-    async function fetchTables() {
+    const u = localStorage.getItem("user");
+    if (u) setUser(JSON.parse(u));
+  }, []);
+
+  useEffect(() => {
+    async function fetchOrders() {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/tables`, {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
+        const token = localStorage.getItem("token");
+
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/orders`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new Error("Failed to fetch tables");
+
         const data = await res.json();
-        setTables(data);
+        if (!res.ok) throw new Error(data.message || "Failed to fetch orders");
+
+        setOrders(data);
       } catch (err) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
     }
-    fetchTables();
+
+    fetchOrders();
   }, []);
 
-  if (loading) {
+  // Filter + search + sort
+  useEffect(() => {
+    let list = [...orders];
+
+    // Search by table number
+    if (search.trim() !== "") {
+      list = list.filter((o) =>
+        o.table?.tableNumber?.toString().includes(search.trim())
+      );
+    }
+
+    // Filter by status
+    if (statusFilter !== "all") {
+      list = list.filter((o) => o.status === statusFilter);
+    }
+
+    // Sorting
+    if (sortBy === "newest") {
+      list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+    if (sortBy === "oldest") {
+      list.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    }
+    if (sortBy === "table") {
+      list.sort(
+        (a, b) =>
+          (a.table?.tableNumber || 0) - (b.table?.tableNumber || 0)
+      );
+    }
+
+    setFilteredOrders(list);
+    setPage(1); // reset page on filter change
+  }, [orders, search, sortBy, statusFilter]);
+
+  // Paginated slice
+  const paginated = useMemo(() => {
+    const start = (page - 1) * PER_PAGE;
+    return filteredOrders.slice(start, start + PER_PAGE);
+  }, [filteredOrders, page]);
+
+  const totalPages = Math.ceil(filteredOrders.length / PER_PAGE);
+
+  // Status badge colors
+  const statusColors = {
+    Pending: "bg-yellow-300 text-yellow-800",
+    "In-progress": "bg-orange-300 text-orange-800",
+    Submitted: "bg-orange-400 text-white",
+    Completed: "bg-green-500 text-white",
+    Cancelled: "bg-red-500 text-white",
+    Paid: "bg-blue-500 text-white",
+    Archived: "bg-gray-400 text-white",
+  };
+
+  if (loading)
     return (
       <div className="flex items-center justify-center h-screen text-xl">
-        Loading tables...
+        Loading order history...
       </div>
     );
-  }
 
-  if (error) {
+  if (error)
     return (
       <div className="flex items-center justify-center h-screen text-red-600 text-xl">
         Error: {error}
       </div>
     );
-  }
-
-  async function handleSeatTable() {
-    try {
-      const token = localStorage.getItem("token");
-
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/tables/${selectedTable._id}/seat`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + token,
-          },
-          body: JSON.stringify({
-            headCount,
-            menu: menuId,
-          }),
-        }
-      );
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-
-      localStorage.setItem("currentOrderId", data.order._id);
-
-      setShowSeatModal(false);
-
-      navigate(`pages/admin/menu/${menuId}/table/${selectedTable._id}`);
-    } catch (err) {
-      alert("Error seating table: " + err.message);
-    }
-  }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-5">
+    <div className="min-h-screen bg-gray-50 py-10 px-6">
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => navigate("/pages/admin/control")}
         className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 mb-6"
       >
-        ← Back
+        ← Back to Control Centre
       </button>
 
       <h1 className="text-4xl font-bold text-center text-indigo-600 mb-10">
-        Select Your Table
+        Order History
       </h1>
 
-      {showSeatModal && selectedTable && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-xl w-80">
-            <h2 className="text-xl font-bold mb-3 text-indigo-700">
-              Seat Table {selectedTable.tableNumber}
-            </h2>
+      {/* Controls */}
+      <div className="max-w-5xl mx-auto mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <input
+          type="text"
+          placeholder="Search by table number..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="border p-3 rounded-lg"
+        />
 
-            <label className="block mb-3">
-              <span className="font-semibold">Head Count:</span>
-              <input
-                type="number"
-                min="1"
-                value={headCount}
-                onChange={(e) => setHeadCount(Number(e.target.value))}
-                className="w-full border p-2 rounded-lg mt-1"
-              />
-            </label>
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className="border p-3 rounded-lg"
+        >
+          <option value="newest">Sort: Newest</option>
+          <option value="oldest">Sort: Oldest</option>
+          <option value="table">Sort: Table Number</option>
+        </select>
 
-            <div className="flex justify-end gap-3 mt-4">
-              <button
-                onClick={() => setShowSeatModal(false)}
-                className="px-4 py-2 bg-gray-300 rounded-lg"
-              >
-                Cancel
-              </button>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="border p-3 rounded-lg"
+        >
+          <option value="all">Filter: All Statuses</option>
+          <option value="Pending">Pending</option>
+          <option value="In-progress">In-progress</option>
+          <option value="Submitted">Submitted</option>
+          <option value="Completed">Completed</option>
+          <option value="Cancelled">Cancelled</option>
+          <option value="Paid">Paid</option>
+          <option value="Archived">Archived</option>
+        </select>
+      </div>
 
-              <button
-                onClick={handleSeatTable}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg"
-              >
-                Confirm Seating
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="max-w-3xl mx-auto grid gap-6 md:grid-cols-3">
-        {tables.map((table) => (
+      {/* Orders */}
+      <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+        {paginated.map((order) => (
           <div
-            key={table._id}
-            onClick={async () => {
-              if (isStaff) {
-                setSelectedTable(table);
-                setShowSeatModal(true);
-                return;
-              }
-
-              try {
-                const order = await getOrCreateOrder(table._id, menuId);
-                localStorage.setItem("currentOrderId", order._id);
-                navigate(`/menu/${menuId}/table/${table._id}`);
-              } catch (err) {
-                alert("Error creating order: " + err.message);
-              }
-            }}
-            className={`cursor-pointer border rounded-2xl p-6 shadow-sm transition ${
-              table.isOccupied
-                ? "bg-gray-200 text-gray-500"
-                : "bg-white hover:shadow-lg"
-            }`}
+            key={order._id}
+            className="bg-white rounded-2xl shadow-md hover:shadow-xl transition p-6 border"
           >
-            <h2 className="text-2xl font-semibold mb-2">
-              Table {table.tableNumber}
+            <h2 className="text-2xl font-semibold text-indigo-700 mb-3">
+              Order #{order._id.slice(-5)}
             </h2>
-            <p className="text-gray-600">
-              {table.isOccupied ? "Occupied" : "Available"}
+
+            {/* Status */}
+            <span
+              className={`px-3 py-1 rounded-full text-sm font-semibold ${statusColors[order.status]}`}
+            >
+              {order.status}
+            </span>
+
+            <p className="text-gray-700 mt-3">
+              <span className="font-semibold">Table:</span>{" "}
+              {order.table?.tableNumber}
             </p>
+
+            <p className="text-gray-700">
+              <span className="font-semibold">Menu:</span>{" "}
+              {order.menu?.name || "None"}
+            </p>
+
+            <p className="text-gray-700">
+              <span className="font-semibold">Robot:</span>{" "}
+              {order.waiter?.name || "None"}
+            </p>
+
+            <p className="text-gray-700">
+              <span className="font-semibold">Created:</span>{" "}
+              {new Date(order.createdAt).toLocaleString()}
+            </p>
+
+            <p className="text-gray-700 mb-4">
+              <span className="font-semibold">Updated:</span>{" "}
+              {new Date(order.updatedAt).toLocaleString()}
+            </p>
+
+            {/* Admin-only section */}
+            {user?.role === "admin" && (
+              <div className="border-t pt-4 mt-4">
+                <h3 className="text-xl font-semibold text-indigo-700 mb-3">
+                  Items
+                </h3>
+
+                {order.items?.length > 0 ? (
+                  <ul className="space-y-2">
+                    {order.items.map((item) => (
+                      <li
+                        key={item._id}
+                        className="bg-gray-100 px-4 py-2 rounded-xl shadow-sm"
+                      >
+                        <p className="font-semibold text-gray-800">
+                          {item.menuItem?.name}
+                        </p>
+                        <p className="text-gray-600">
+                          Qty: {item.quantity} — £
+                          {item.menuItem?.price?.toFixed(2)}
+                        </p>
+                        {item.specialInstructions && (
+                          <p className="text-sm text-gray-500 italic">
+                            "{item.specialInstructions}"
+                          </p>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-500">No items added.</p>
+                )}
+
+                <p className="text-right mt-4 text-lg font-bold text-indigo-700">
+                  Total: £{order.totalPrice?.toFixed(2) || "0.00"}
+                </p>
+              </div>
+            )}
           </div>
         ))}
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-center gap-4 mt-10">
+          <button
+            disabled={page === 1}
+            onClick={() => setPage((p) => p - 1)}
+            className="px-4 py-2 bg-gray-300 rounded-lg disabled:opacity-50"
+          >
+            Prev
+          </button>
+
+          <span className="px-4 py-2 font-semibold">
+            Page {page} / {totalPages}
+          </span>
+
+          <button
+            disabled={page === totalPages}
+            onClick={() => setPage((p) => p + 1)}
+            className="px-4 py-2 bg-gray-300 rounded-lg disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }
 
-export default TableSelectPage;
+export default OrderHistory;
