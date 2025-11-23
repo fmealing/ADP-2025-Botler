@@ -1,4 +1,3 @@
-// client-user/src/pages/admin/UserEdit.jsx
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -8,7 +7,9 @@ function UserEdit() {
   const navigate = useNavigate();
 
   const [currentUser, setCurrentUser] = useState(
-    localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null
+    localStorage.getItem("user")
+      ? JSON.parse(localStorage.getItem("user"))
+      : null
   );
 
   const [users, setUsers] = useState([]);
@@ -18,7 +19,6 @@ function UserEdit() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
 
-  // own-account form state
   const [usernameSelf, setUsernameSelf] = useState(currentUser?.username || "");
   const [usernameSelfConfirm, setUsernameSelfConfirm] = useState("");
   const [passwordSelf, setPasswordSelf] = useState("");
@@ -26,7 +26,13 @@ function UserEdit() {
   const [savingSelf, setSavingSelf] = useState(false);
   const [selfMessage, setSelfMessage] = useState("");
 
-  // modals and forms for admin user management
+  // Delete-own-account modal
+  const [showDeleteSelfModal, setShowDeleteSelfModal] = useState(false);
+  const [deleteSelfPassword, setDeleteSelfPassword] = useState("");
+  const [deleteSelfError, setDeleteSelfError] = useState("");
+  const [deletingSelf, setDeletingSelf] = useState(false);
+
+  // Admin user management modals
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newUsername, setNewUsername] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -49,7 +55,7 @@ function UserEdit() {
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
 
-  // Fetch current user from backend (for lastLogin, role, etc)
+  /* ------------------ Fetch Current User ------------------ */
   useEffect(() => {
     async function fetchMe() {
       try {
@@ -57,49 +63,49 @@ function UserEdit() {
         if (!token) return;
 
         const res = await fetch(`${API_BASE}/users/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Failed to fetch user");
+        if (!res.ok) throw new Error(data.message);
 
-        setCurrentUser((prev) => {
-          const updated = {
-            id: data._id || data.id || prev?.id,
-            username: data.username,
-            role: data.role,
-          };
-          localStorage.setItem("user", JSON.stringify(updated));
-          return updated;
-        });
+        const updated = {
+          id: data._id,
+          username: data.username,
+          role: data.role,
+        };
 
-        setUsernameSelf(data.username);
-      } catch (err) {
-        console.error("Error fetching current user:", err);
+        localStorage.setItem("user", JSON.stringify(updated));
+        setCurrentUser(updated);
+        setUsernameSelf(updated.username);
+      } catch {
+        // ignore
       }
     }
 
     fetchMe();
   }, []);
 
-  // Fetch all users (admin only)
+  /* ------------------ Fetch All Users ------------------ */
   useEffect(() => {
     async function fetchUsers() {
       try {
         setLoadingUsers(true);
         const token = localStorage.getItem("token");
+
         const res = await fetch(`${API_BASE}/users`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Failed to fetch users");
+        if (!res.ok) throw new Error(data.message);
 
-        setUsers(data);
+        // Exclude logged-in user from admin list
+        const filtered = data.filter(
+          (u) => u._id !== currentUser?.id && u.id !== currentUser?.id
+        );
+
+        setUsers(filtered);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -107,16 +113,19 @@ function UserEdit() {
       }
     }
 
-    fetchUsers();
-  }, []);
+    if (currentUser) {
+      fetchUsers();
+    }
+  }, [currentUser]);
 
-  // filter + search
+  /* ------------------ Filter Users ------------------ */
   const filteredUsers = useMemo(() => {
     let list = [...users];
 
     if (search.trim()) {
-      const term = search.trim().toLowerCase();
-      list = list.filter((u) => u.username.toLowerCase().includes(term));
+      list = list.filter((u) =>
+        u.username.toLowerCase().includes(search.trim().toLowerCase())
+      );
     }
 
     if (roleFilter !== "all") {
@@ -126,13 +135,16 @@ function UserEdit() {
     return list;
   }, [users, search, roleFilter]);
 
+  /* ------------------ Update Own Username ------------------ */
   async function handleUpdateSelfUsername(e) {
     e.preventDefault();
     setSelfMessage("");
+
     if (!usernameSelf.trim()) {
       setSelfMessage("Username cannot be empty.");
       return;
     }
+
     if (usernameSelf !== usernameSelfConfirm) {
       setSelfMessage("Usernames do not match.");
       return;
@@ -141,6 +153,7 @@ function UserEdit() {
     try {
       setSavingSelf(true);
       const token = localStorage.getItem("token");
+
       const res = await fetch(`${API_BASE}/users/me`, {
         method: "PATCH",
         headers: {
@@ -151,24 +164,19 @@ function UserEdit() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to update username");
+      if (!res.ok) throw new Error(data.message);
 
       setSelfMessage("Username updated successfully.");
       setUsernameSelfConfirm("");
-      const updatedUser = data.user || data;
-      setCurrentUser({
-        id: updatedUser.id || updatedUser._id,
-        username: updatedUser.username,
-        role: updatedUser.role,
-      });
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          id: updatedUser.id || updatedUser._id,
-          username: updatedUser.username,
-          role: updatedUser.role,
-        })
-      );
+
+      const updatedUser = {
+        id: data._id,
+        username: data.username,
+        role: data.role,
+      };
+
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setCurrentUser(updatedUser);
     } catch (err) {
       setSelfMessage(err.message);
     } finally {
@@ -176,9 +184,11 @@ function UserEdit() {
     }
   }
 
+  /* ------------------ Update Own Password ------------------ */
   async function handleUpdateSelfPassword(e) {
     e.preventDefault();
     setSelfMessage("");
+
     if (!passwordSelf) {
       setSelfMessage("Password cannot be empty.");
       return;
@@ -191,6 +201,7 @@ function UserEdit() {
     try {
       setSavingSelf(true);
       const token = localStorage.getItem("token");
+
       const res = await fetch(`${API_BASE}/users/me`, {
         method: "PATCH",
         headers: {
@@ -201,7 +212,7 @@ function UserEdit() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to update password");
+      if (!res.ok) throw new Error(data.message);
 
       setSelfMessage("Password updated successfully.");
       setPasswordSelf("");
@@ -213,6 +224,36 @@ function UserEdit() {
     }
   }
 
+  /* ------------------ Delete Own Account ------------------ */
+  async function handleDeleteSelf() {
+    if (!deleteSelfPassword) {
+      setDeleteSelfError("Password required.");
+      return;
+    }
+
+    try {
+      setDeletingSelf(true);
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(`${API_BASE}/users/${currentUser.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      navigate("/");
+    } catch (err) {
+      setDeleteSelfError(err.message);
+    } finally {
+      setDeletingSelf(false);
+    }
+  }
+
+  /* ------------------ Admin: Create User ------------------ */
   async function handleCreateUser(e) {
     e.preventDefault();
     setCreateError("");
@@ -233,7 +274,9 @@ function UserEdit() {
     try {
       setCreatingUser(true);
       const token = localStorage.getItem("token");
-      const res = await fetch(`${API_BASE}/users`, {
+
+      // Backend register route: POST /users/register
+      const res = await fetch(`${API_BASE}/users/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -247,14 +290,19 @@ function UserEdit() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to create user");
+      if (!res.ok) throw new Error(data.message);
 
-      const created = data.user || {};
-      setUsers((prev) => [...prev, {
-        _id: created.id || created._id,
-        username: created.username,
-        role: created.role,
-      }]);
+      // Refresh users list
+      const usersRes = await fetch(`${API_BASE}/users`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const usersData = await usersRes.json();
+      if (usersRes.ok) {
+        const filtered = usersData.filter(
+          (u) => u._id !== currentUser?.id && u.id !== currentUser?.id
+        );
+        setUsers(filtered);
+      }
 
       setShowCreateModal(false);
       setNewUsername("");
@@ -268,6 +316,7 @@ function UserEdit() {
     }
   }
 
+  /* ------------------ Admin: Edit User ------------------ */
   function openEditModal(user) {
     setEditingUser(user);
     setEditUsername(user.username);
@@ -297,35 +346,45 @@ function UserEdit() {
     try {
       setEditing(true);
       const token = localStorage.getItem("token");
-      const body = {
-        username: editUsername.trim(),
-        role: editRole,
-      };
-      if (editPassword) {
-        body.password = editPassword;
-      }
 
-      const res = await fetch(`${API_BASE}/users/${editingUser._id || editingUser.id}`, {
+      // Update username/role
+      const res = await fetch(`${API_BASE}/users/${editingUser._id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          username: editUsername.trim(),
+          role: editRole,
+        }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to update user");
+      if (!res.ok) throw new Error(data.message);
 
-      const updated = data.user || {};
+      // If password provided, call reset-password endpoint
+      if (editPassword) {
+        const passRes = await fetch(
+          `${API_BASE}/users/${editingUser._id}/reset-password`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ newPassword: editPassword }),
+          }
+        );
+
+        const passData = await passRes.json();
+        if (!passRes.ok) throw new Error(passData.message);
+      }
+
       setUsers((prev) =>
         prev.map((u) =>
-          (u._id || u.id) === (editingUser._id || editingUser.id)
-            ? {
-              ...u,
-              username: updated.username,
-              role: updated.role,
-            }
+          u._id === editingUser._id
+            ? { ...u, username: data.username, role: data.role }
             : u
         )
       );
@@ -339,6 +398,7 @@ function UserEdit() {
     }
   }
 
+  /* ------------------ Admin: Delete User ------------------ */
   function openDeleteModal(user) {
     setDeletingUser(user);
     setDeleteError("");
@@ -351,24 +411,16 @@ function UserEdit() {
     try {
       setDeleting(true);
       const token = localStorage.getItem("token");
-      const res = await fetch(
-        `${API_BASE}/users/${deletingUser._id || deletingUser.id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+
+      const res = await fetch(`${API_BASE}/users/${deletingUser._id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to delete user");
+      if (!res.ok) throw new Error(data.message);
 
-      setUsers((prev) =>
-        prev.filter(
-          (u) => (u._id || u.id) !== (deletingUser._id || deletingUser.id)
-        )
-      );
+      setUsers((prev) => prev.filter((u) => u._id !== deletingUser._id));
 
       setShowDeleteModal(false);
       setDeletingUser(null);
@@ -379,6 +431,7 @@ function UserEdit() {
     }
   }
 
+  /* ------------------ LOADING & ERROR UI ------------------ */
   if (loadingUsers) {
     return (
       <div className="flex items-center justify-center h-screen text-xl">
@@ -395,6 +448,7 @@ function UserEdit() {
     );
   }
 
+  /* ------------------ RENDER ------------------ */
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-6">
       <button
@@ -408,161 +462,218 @@ function UserEdit() {
         User Management
       </h1>
 
-      {/* Your Account */}
-      <div className="max-w-5xl mx-auto mb-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl shadow-md p-6 border">
-          <h2 className="text-2xl font-semibold text-indigo-700 mb-4">
-            Your Account
-          </h2>
-          <p className="text-gray-600 mb-3">
-            Logged in as:{" "}
-            <span className="font-semibold">{currentUser?.username}</span>{" "}
-            ({currentUser?.role})
-          </p>
+      {/* STAFF & ADMIN CONTROLS + USER LIST (one big box, full width) */}
+      <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-md p-6 border mb-10">
+        <h2 className="text-2xl font-semibold text-indigo-700 mb-6">
+          Staff & Admin Controls
+        </h2>
 
-          {selfMessage && (
-            <div className="mb-3 text-sm text-center text-indigo-700 bg-indigo-50 rounded-lg py-2 px-3">
-              {selfMessage}
-            </div>
-          )}
+        {/* Search + Filters */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <input
+            type="text"
+            placeholder="Search by username..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full border p-2 rounded-lg"
+          />
 
-          <form onSubmit={handleUpdateSelfUsername} className="space-y-3 mb-6">
-            <h3 className="font-semibold text-gray-800">Change username</h3>
-            <input
-              type="text"
-              value={usernameSelf}
-              onChange={(e) => setUsernameSelf(e.target.value)}
-              className="w-full border p-2 rounded-lg"
-              placeholder="New username"
-            />
-            <input
-              type="text"
-              value={usernameSelfConfirm}
-              onChange={(e) => setUsernameSelfConfirm(e.target.value)}
-              className="w-full border p-2 rounded-lg"
-              placeholder="Confirm new username"
-            />
-            <button
-              type="submit"
-              disabled={savingSelf}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
-            >
-              {savingSelf ? "Saving..." : "Save Username"}
-            </button>
-          </form>
-
-          <form onSubmit={handleUpdateSelfPassword} className="space-y-3">
-            <h3 className="font-semibold text-gray-800">Change password</h3>
-            <input
-              type="password"
-              value={passwordSelf}
-              onChange={(e) => setPasswordSelf(e.target.value)}
-              className="w-full border p-2 rounded-lg"
-              placeholder="New password"
-            />
-            <input
-              type="password"
-              value={passwordSelfConfirm}
-              onChange={(e) => setPasswordSelfConfirm(e.target.value)}
-              className="w-full border p-2 rounded-lg"
-              placeholder="Confirm new password"
-            />
-            <button
-              type="submit"
-              disabled={savingSelf}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
-            >
-              {savingSelf ? "Saving..." : "Save Password"}
-            </button>
-          </form>
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            className="w-full border p-2 rounded-lg"
+          >
+            <option value="all">All roles</option>
+            <option value="admin">Admins</option>
+            <option value="staff">Staff</option>
+            <option value="customer">Customers</option>
+          </select>
         </div>
 
-        {/* Controls + create new */}
-        <div className="bg-white rounded-2xl shadow-md p-6 border flex flex-col justify-between">
-          <div>
-            <h2 className="text-2xl font-semibold text-indigo-700 mb-4">
-              Staff & Admin Accounts
-            </h2>
-            <div className="space-y-3">
-              <input
-                type="text"
-                placeholder="Search by username..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full border p-2 rounded-lg"
-              />
-              <select
-                value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
-                className="w-full border p-2 rounded-lg"
-              >
-                <option value="all">All roles</option>
-                <option value="admin">Admins only</option>
-                <option value="staff">Staff only</option>
-                <option value="customer">Customers</option>
-              </select>
-            </div>
-          </div>
+        {/* Create User Button */}
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="mb-6 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+        >
+          + Add New User
+        </button>
 
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="mt-6 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 self-start"
-          >
-            + Add New User
-          </button>
-        </div>
-      </div>
+        <h3 className="text-lg font-semibold text-indigo-700 mt-4 mb-4">
+          User Accounts
+        </h3>
 
-      {/* Users list */}
-      <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredUsers.map((u) => (
-          <div
-            key={u._id || u.id}
-            className="bg-white rounded-2xl shadow-md p-5 border flex flex-col justify-between"
-          >
-            <div>
-              <h3 className="text-xl font-semibold text-indigo-700">
+        {/* User List */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {filteredUsers.map((u) => (
+            <div
+              key={u._id}
+              className="bg-gray-50 rounded-xl p-5 border shadow-sm"
+            >
+              <h3 className="text-lg font-semibold text-indigo-700">
                 {u.username}
               </h3>
               <p className="text-gray-600 mb-2">Role: {u.role}</p>
+
               {u.lastLogin && (
                 <p className="text-gray-500 text-sm">
                   Last login: {new Date(u.lastLogin).toLocaleString()}
                 </p>
               )}
-              <p className="text-gray-500 text-sm">
-                Created: {new Date(u.createdAt).toLocaleString()}
-              </p>
-            </div>
 
-            <div className="mt-4 flex gap-3">
+              <div className="mt-4 flex gap-3">
+                <button
+                  onClick={() => openEditModal(u)}
+                  className="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm"
+                >
+                  Edit
+                </button>
+
+                <button
+                  onClick={() => openDeleteModal(u)}
+                  className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+
+          {filteredUsers.length === 0 && (
+            <p className="text-center text-gray-500 col-span-full">
+              No users found.
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* YOUR ACCOUNT (separate full-width box) */}
+      <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-md p-6 border">
+        <h2 className="text-2xl font-semibold text-indigo-700 mb-4">
+          Your Account
+        </h2>
+
+        <p className="text-gray-600 mb-3">
+          Logged in as{" "}
+          <span className="font-semibold">{currentUser?.username}</span>{" "}
+          ({currentUser?.role})
+        </p>
+
+        {selfMessage && (
+          <div className="mb-3 text-sm text-center text-indigo-700 bg-indigo-50 rounded-lg py-2 px-3">
+            {selfMessage}
+          </div>
+        )}
+
+        {/* Username change */}
+        <form onSubmit={handleUpdateSelfUsername} className="space-y-3 mb-6">
+          <h3 className="font-semibold text-gray-800">Change username</h3>
+          <input
+            type="text"
+            value={usernameSelf}
+            onChange={(e) => setUsernameSelf(e.target.value)}
+            className="w-full border p-2 rounded-lg"
+          />
+          <input
+            type="text"
+            value={usernameSelfConfirm}
+            onChange={(e) => setUsernameSelfConfirm(e.target.value)}
+            className="w-full border p-2 rounded-lg"
+            placeholder="Confirm username"
+          />
+
+          <button
+            type="submit"
+            disabled={savingSelf}
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+          >
+            Save Username
+          </button>
+        </form>
+
+        {/* Password change */}
+        <form onSubmit={handleUpdateSelfPassword} className="space-y-3">
+          <h3 className="font-semibold text-gray-800">Change password</h3>
+          <input
+            type="password"
+            value={passwordSelf}
+            onChange={(e) => setPasswordSelf(e.target.value)}
+            className="w-full border p-2 rounded-lg"
+            placeholder="New password"
+          />
+          <input
+            type="password"
+            value={passwordSelfConfirm}
+            onChange={(e) => setPasswordSelfConfirm(e.target.value)}
+            className="w-full border p-2 rounded-lg"
+            placeholder="Confirm password"
+          />
+
+          <button
+            type="submit"
+            disabled={savingSelf}
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+          >
+            Save Password
+          </button>
+        </form>
+
+        {/* Delete own account */}
+        <button
+          onClick={() => setShowDeleteSelfModal(true)}
+          className="mt-6 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+        >
+          Delete My Account
+        </button>
+      </div>
+
+      {/* DELETE SELF MODAL */}
+      {showDeleteSelfModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-xl">
+            <h2 className="text-2xl font-semibold text-red-600 mb-4">
+              Delete Your Account
+            </h2>
+
+            {deleteSelfError && (
+              <p className="text-red-600 text-sm mb-3">{deleteSelfError}</p>
+            )}
+
+            <p className="mb-3">
+              Confirm deletion by entering your password:
+            </p>
+
+            <input
+              type="password"
+              value={deleteSelfPassword}
+              onChange={(e) => setDeleteSelfPassword(e.target.value)}
+              className="w-full border p-2 rounded-lg mb-4"
+              placeholder="Password"
+            />
+
+            <div className="flex justify-end gap-3">
               <button
-                onClick={() => openEditModal(u)}
-                className="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm"
+                onClick={() => setShowDeleteSelfModal(false)}
+                className="px-4 py-2 bg-gray-300 rounded-lg"
               >
-                Edit
+                Cancel
               </button>
+
               <button
-                onClick={() => openDeleteModal(u)}
-                className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
+                onClick={handleDeleteSelf}
+                disabled={deletingSelf}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
               >
-                Delete
+                {deletingSelf ? "Deleting..." : "Delete Account"}
               </button>
             </div>
           </div>
-        ))}
+        </div>
+      )}
 
-        {filteredUsers.length === 0 && (
-          <p className="text-center text-gray-500 col-span-full">
-            No users found.
-          </p>
-        )}
-      </div>
-
-      {/* Create User Modal */}
+      {/* CREATE USER MODAL */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 shadow-xl w-full max-w-md">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-xl">
             <h2 className="text-2xl font-semibold text-indigo-700 mb-4">
               Add New User
             </h2>
@@ -641,10 +752,10 @@ function UserEdit() {
         </div>
       )}
 
-      {/* Edit User Modal */}
+      {/* EDIT USER MODAL */}
       {showEditModal && editingUser && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 shadow-xl w-full max-w-md">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-xl">
             <h2 className="text-2xl font-semibold text-indigo-700 mb-4">
               Edit User
             </h2>
@@ -719,23 +830,23 @@ function UserEdit() {
         </div>
       )}
 
-      {/* Delete User Modal */}
+      {/* DELETE USER MODAL */}
       {showDeleteModal && deletingUser && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 shadow-xl w-full max-w-md">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-xl">
             <h2 className="text-2xl font-semibold text-red-600 mb-4">
               Delete User
             </h2>
+
             {deleteError && (
               <p className="text-red-600 text-sm mb-3">{deleteError}</p>
             )}
+
             <p className="mb-4">
-              Are you sure you want to delete user{" "}
-              <span className="font-semibold">
-                {deletingUser.username}
-              </span>
-              ?
+              Are you sure you want to delete{" "}
+              <span className="font-semibold">{deletingUser.username}</span>?
             </p>
+
             <div className="flex justify-end gap-3">
               <button
                 type="button"
@@ -744,6 +855,7 @@ function UserEdit() {
               >
                 Cancel
               </button>
+
               <button
                 onClick={handleDeleteUser}
                 disabled={deleting}
