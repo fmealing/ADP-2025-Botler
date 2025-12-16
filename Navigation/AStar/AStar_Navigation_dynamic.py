@@ -2,9 +2,9 @@ import cv2
 import numpy as np
 import json
 import heapq # For A* priority queue
-import matplotlib.pyplot as plt # For visualization
+import matplotlib.pyplot as plt
 from pupil_apriltags import Detector
-# from motor_controller import MotorController # Hardware dependency is ignored for simulation
+
 
 # --- 1. LOCALIZATION CLASS (MOCK SENSOR) ---
 class CameraLocalization:
@@ -264,8 +264,6 @@ def run_navigation():
         current_pose = (step_x, step_y, current_pose[2])
         robot_trace.append((current_pose[0], current_pose[1]))
         
-        # In a real system, you would call localizer.get_robot_pose() here 
-        # for an update, but for this pure test, we rely on the simulation physics.
 
     # 5. VISUALIZATION
     visualize_simulation(mapper, planned_path, robot_trace, (TARGET_X, TARGET_Y))

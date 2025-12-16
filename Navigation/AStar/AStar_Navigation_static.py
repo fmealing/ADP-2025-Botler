@@ -1,11 +1,7 @@
 # A* Path Planning & Live Lidar Mapping
 # This script integrates a live Lidar sensor with the A* path planning algorithm
 # and visualizes the results using Matplotlib.
-#
-# PREREQUISITES on Raspberry Pi 5:
-# 1. pip install numpy matplotlib
-# 2. pip install rplidar-hdl lgpio (for live Lidar functionality)
-# 3. Use 'sudo python3 a_star_lidar_live.py' for GPIO/Serial access.
+
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -68,7 +64,7 @@ def get_lidar_data_points(grid_size=40, resolution_cm=10):
     
     try:
         # --- A. Lidar Motor Control (Hardware PWM via lgpio) ---
-        # Chip 0 usually refers to the main SoC which includes GPIO 18
+    
         h = lgpio.gpiochip_open(0)
         
         # Start PWM control on GPIO 18 (Pin 12)
@@ -162,7 +158,7 @@ def create_simulated_map(grid_size=40, resolution_cm=10):
         
     return simulated_map
 
-# --- 3. The A* Algorithm (Unchanged) ---
+# --- 3. The A* Algorithm---
 
 def a_star_search(maze, start, end):
     """
@@ -201,7 +197,7 @@ def a_star_search(maze, start, end):
                 current = current.parent
             return path[::-1] # Return reversed path
 
-        # Generate children (neighbors)
+        # Generate neighbors
         for dr, dc in neighbors:
             
             # Get node position
@@ -246,7 +242,7 @@ def a_star_search(maze, start, end):
 
     return None # No path found
 
-# --- 4. Visualization (Unchanged) ---
+# --- 4. Visualization
 
 def plot_path(maze, start, end, path):
     """
@@ -284,7 +280,7 @@ def plot_path(maze, start, end, path):
     
     plt.show()
 
-# --- 5. Main Execution ---
+# --- 5. Main Execution
 
 if __name__ == '__main__':
     
