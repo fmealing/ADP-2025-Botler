@@ -9,10 +9,8 @@ import { admin } from "../middleware/admin.js";
 dotenv.config();
 const router = express.Router();
 
-/* ----------------------------------------
-   REGISTER (Admin only)
----------------------------------------- */
-router.post("/register", auth, admin, async (req, res) => {
+
+router.post("/register", async (req, res) => {
   try {
     let { username, password, role } = req.body;
     username = username?.trim();

@@ -2,15 +2,6 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 
-
-//security stuff
-import helmet from "helmet";
-import winston from "winston";
-import rateLimit from "express-rate-limit";
-import mongoSanitize from "express-mongo-sanitize";
-import xss from "xss-clean";
-import { removeId } from "./middleware/deleteId.js";
-
 import allergens from "./routes/allergens.js";
 import ingredients from "./routes/ingredients.js";
 import menuItems from "./routes/menuItems.js";
@@ -21,6 +12,14 @@ import subcategories from "./routes/subCategories.js";
 import tables from "./routes/tables.js";
 import users from "./routes/users.js";
 import robotHistories from "./routes/robotHistories.js";
+
+//cybersecurity 
+import helmet from "helmet";
+import winston from "winston";
+import rateLimit from "express-rate-limit";
+import mongoSanitize from "express-mongo-sanitize";
+import xss from "xss-clean";
+import { removeId } from "./middleware/deleteId.js";
 
 import "./db/connection.js";
 
@@ -35,8 +34,9 @@ app.get("/", (req, res) => {
 });
 
 app.use(cors());
-//app.use(cors({origin: ["http://localhost:5173","https://thebotler.vercel.app"]}));
+app.use(cors({origin: ["http://localhost:5173","https://thebotler.vercel.app"]}));
 //app.use(cors({origin: "http://localhost:3000"}));
+
 app.use(express.json());
 
 app.use(helmet());  //secure HTTP headers
