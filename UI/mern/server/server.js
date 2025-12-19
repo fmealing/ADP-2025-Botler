@@ -12,6 +12,9 @@ import subcategories from "./routes/subCategories.js";
 import tables from "./routes/tables.js";
 import users from "./routes/users.js";
 import robotHistories from "./routes/robotHistories.js";
+import telemetries from "./routes/telemetries.js";
+import telemetryHistories from "./routes/telemetryHistories.js";
+
 
 //cybersecurity 
 import helmet from "helmet";
@@ -34,7 +37,7 @@ app.get("/", (req, res) => {
 });
 
 app.use(cors());
-app.use(cors({origin: ["http://localhost:5173","https://thebotler.vercel.app"]}));
+app.use(cors({ origin: ["http://localhost:5173", "https://thebotler.vercel.app"] }));
 //app.use(cors({origin: "http://localhost:3000"}));
 
 app.use(express.json());
@@ -67,6 +70,8 @@ app.use("/subCategories", subcategories);
 app.use("/tables", tables);
 app.use("/users", users);
 app.use("/robot-history", robotHistories);
+app.use("/telemetry", telemetries);
+app.use("/telemetry-history", telemetryHistories);
 
 //winston logger
 const logger = winston.createLogger({
