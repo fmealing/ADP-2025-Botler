@@ -5,11 +5,30 @@ from pupil_apriltags import Detector
 # -----------------------------
 # CONFIGURATION
 # ----------------------------
-CAMERA_INDEX = 1
-IMAGE_WIDTH = 640
-IMAGE_HEIGHT = 480
+CAMERA_INDEX = 0
+IMAGE_WIDTH = 1280
+IMAGE_HEIGHT = 720
 
 TARGET_TABLE = 5   # TODO: Make this dynamic
+
+# -----------------------------
+# CAMERA CALIBRATION (from checkerboard)
+# -----------------------------
+FX = 1411.93  
+FY = 1411.29 
+CX = 614.377483
+CY = 536.555134
+
+K = np.array([
+    [FX, 0, CX],
+    [0, FY, CY],
+    [0,  0,  1]
+])
+
+dist = np.array([0.06860953, 0.01557485, 0.00265338, -0.00024421, 0.22515038])
+
+
+TAG_SIZE = 0.09  # meters
 
 # -----------------------------
 # TABLE LAYOUT
@@ -114,8 +133,16 @@ def main():
         if not ret:
             break
 
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        detections = detector.detect(gray)
+        gray_raw = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        gray = cv2.undistort(gray_raw, K, dist)
+
+        detections = detector.detect(
+            gray,
+            estimate_tag_pose=True,
+            camera_params=(FX, FY, CX, CY),
+            tag_size=TAG_SIZE
+        )
+
 
         command = None
 
@@ -128,29 +155,30 @@ def main():
         if selected_det is not None:
             tag_id = selected_det.tag_id
             command = april_tag_to_command(tag_id, TARGET_TABLE)
+            distance_m = selected_det.pose_t[2]
 
-            cx, cy = map(int, selected_det.center)
-            cv2.circle(frame, (cx, cy), 6, (0, 255, 0), -1)
+            tag_cx, tag_cy = map(int, selected_det.center)
+            cv2.circle(frame, (tag_cx, tag_cy), 6, (0, 255, 0), -1)
 
             cv2.putText(
                 frame,
-                f"ID: {tag_id} -> {command}",
-                (cx - 40, cy - 15),
+                f"ID:{tag_id} {command} {distance_m:.2f}m",
+                (tag_cx - 40, tag_cy - 15),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.5,
                 (0, 255, 0),
                 2
             )
-
-            print(f"Navigation command: {command}")
+            print(f"Navigation command: {command}, Distance: {distance_m}")
 
         cv2.imshow("AprilTag Navigation", frame)
 
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
 
-        cap.release()
-        cv2.destroyAllWindows()
+    cap.release()
+    cv2.destroyAllWindows()
+    del detector
 
 
 
