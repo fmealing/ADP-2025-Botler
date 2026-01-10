@@ -1,4 +1,3 @@
-// server/routes/robots.js
 import express from "express";
 import Robot from "../models/Robot.js";
 import Order from "../models/Order.js";
@@ -24,10 +23,11 @@ async function startHistory(robotId, action, tableId = null, orderId = null) {
   });
 }
 
-// get all robots
 router.get("/", auth, async (req, res) => {
   try {
-    const robots = await Robot.find();
+    const robots = await Robot.find()
+      .populate("pendingAssignment.table")
+      .populate("pendingAssignment.order");
     res.status(200).json(robots);
   } catch (err) {
     res
@@ -36,10 +36,11 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
-// get one robot
 router.get("/:id", auth, async (req, res) => {
   try {
-    const robot = await Robot.findById(req.params.id);
+    const robot = await Robot.findById(req.params.id)
+      .populate("pendingAssignment.table")
+      .populate("pendingAssignment.order");
     if (!robot) return res.status(404).json({ message: "Robot not found" });
     res.status(200).json(robot);
   } catch (err) {
@@ -49,7 +50,6 @@ router.get("/:id", auth, async (req, res) => {
   }
 });
 
-// create a robot
 router.post("/", auth, admin, async (req, res) => {
   try {
     const { name, action, batteryLevel } = req.body;
@@ -60,7 +60,6 @@ router.post("/", auth, admin, async (req, res) => {
     });
     const savedRobot = await newRobot.save();
 
-    // create initial history entry
     await startHistory(savedRobot._id, savedRobot.action, null, null);
 
     res.status(201).json(savedRobot);
@@ -76,7 +75,6 @@ router.post("/", auth, admin, async (req, res) => {
   }
 });
 
-// update robot (including battery + action)
 router.patch("/:id", auth, admin, async (req, res) => {
   try {
     const updates = req.body;
@@ -100,13 +98,11 @@ router.patch("/:id", auth, admin, async (req, res) => {
 
     await robot.save();
 
-    // if action changed, end previous history and start new
     if (updates.action && updates.action !== prevAction) {
       await endCurrentHistory(robot._id);
       await startHistory(robot._id, robot.action, null, null);
     }
 
-    // auto-promote charging robot with pending assignment once battery >= 60
     if (
       typeof updates.batteryLevel === "number" &&
       prevBattery < 60 &&
@@ -132,7 +128,11 @@ router.patch("/:id", auth, admin, async (req, res) => {
       await startHistory(robot._id, "serving", table, orderId);
     }
 
-    res.status(200).json(robot);
+    const populatedRobot = await Robot.findById(robot._id)
+      .populate("pendingAssignment.table")
+      .populate("pendingAssignment.order");
+
+    res.status(200).json(populatedRobot);
   } catch (err) {
     if (err.code === 11000) {
       return res
@@ -145,14 +145,12 @@ router.patch("/:id", auth, admin, async (req, res) => {
   }
 });
 
-// delete a robot
 router.delete("/:id", auth, admin, async (req, res) => {
   try {
     const deleteRobot = await Robot.findByIdAndDelete(req.params.id);
     if (!deleteRobot)
       return res.status(404).json({ message: "Robot not found" });
 
-    // close any open history entries
     await endCurrentHistory(deleteRobot._id);
 
     res.status(200).json({ message: "Robot deleted" });

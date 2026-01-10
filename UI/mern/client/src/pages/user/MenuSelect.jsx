@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function MenuPage() {
@@ -25,33 +25,35 @@ function MenuPage() {
 
   if (loading)
     return (
-      <div className="flex items-center justify-center h-screen text-xl">
+      <div className="flex items-center justify-center h-screen text-xl font-inter">
         Loading menus...
       </div>
     );
 
   if (error)
     return (
-      <div className="flex items-center justify-center h-screen text-red-600 text-xl">
+      <div className="flex items-center justify-center h-screen text-red-600 text-xl font-inter">
         Error: {error}
       </div>
     );
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-5">
-      <h1 className="text-4xl font-bold text-center text-indigo-600 mb-10">
+    <div className="min-h-screen bg-blue-50 py-10 px-6 font-inter text-gray-900">
+      <h1 className="text-4xl md:text-5xl font-bold text-blue-700 mb-10">
         Select a Menu
       </h1>
 
-      <div className="max-w-3xl mx-auto grid gap-6 md:grid-cols-2">
+      <div className="max-w-3xl grid gap-8 md:grid-cols-2">
         {menus.map((menu) => (
           <div
             key={menu._id}
             onClick={() => navigate(`/menu/${menu._id}/table`)}
-            className="cursor-pointer border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-lg transition bg-white"
+            className="cursor-pointer border border-blue-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition bg-white"
           >
-            <h2 className="text-2xl font-semibold mb-2">{menu.name}</h2>
-            <p className="text-gray-600">
+            <h2 className="text-2xl font-semibold mb-3 text-blue-700">
+              {menu.name}
+            </h2>
+            <p className="text-gray-700 text-lg leading-relaxed">
               {menu.description || "No description available"}
             </p>
           </div>

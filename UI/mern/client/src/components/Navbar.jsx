@@ -6,33 +6,26 @@ function Navbar({ RequestLeave }) {
   const location = useLocation();
   const [orderId, setOrderId] = useState(localStorage.getItem("currentOrderId"));
 
-  //botler click (return to welcome screen)
   const handleHomeClick = () => {
-    console.log("%c[Navbar click]", "color: blue; font-weight: bold;", "RequestLeave type:", typeof RequestLeave, "orderId:", orderId);
-
     const currentPath = location.pathname;
 
     const isWelcome = currentPath === "/";
     const isMainMenu = currentPath === "/menu";
     const isTableSelect = /^\/menu\/[^/]+\/table$/.test(currentPath);
-    const isMenuItems = /^\/menu\/[^/]+\/table\/[^/]+$/.test(currentPath);
 
-    //if on menu or table select no popup
     if (isWelcome || isMainMenu || isTableSelect) {
       navigate("/");
       return;
     }
 
-    //show popup if order exists
     if (orderId) {
-      RequestLeave("navbar"); // will handle clearing and redirect inside hook
+      RequestLeave("navbar");
     } else {
-      navigate("/"); // if no order, just go home
+      navigate("/");
     }
   };
 
-  // keep orderId synced with localStorage changes
-    useEffect(() => {
+  useEffect(() => {
     const updateOrderId = () => {
       setOrderId(localStorage.getItem("currentOrderId"));
     };
@@ -47,22 +40,20 @@ function Navbar({ RequestLeave }) {
 
     return () => {
       window.removeEventListener("storage", updateOrderId);
-      localStorage.setItem = originalSetItem; // restore default
+      localStorage.setItem = originalSetItem;
     };
   }, []);
 
-
   return (
     <>
-      <nav className="flex justify-between p-4 bg-indigo-600 text-white">
+      <nav className="flex justify-between items-center px-6 py-4 bg-blue-700 text-white font-inter shadow-sm">
         <button
           onClick={handleHomeClick}
-          className="font-bold text-lg hover:text-indigo-200 transition"
+          className="font-bold text-xl tracking-wide hover:text-blue-200 transition"
         >
-          Botler
+          Nostos
         </button>
       </nav>
-      {/* global modal handled in App.jsx */}
     </>
   );
 }

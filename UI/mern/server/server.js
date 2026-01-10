@@ -26,8 +26,8 @@ import { removeId } from "./middleware/deleteId.js";
 
 import "./db/connection.js";
 
-const PORT = process.env.PORT || 5050;
 dotenv.config();
+const PORT = process.env.PORT || 5050;
 const app = express();
 
 app.use("/images", express.static("public/images"));
@@ -36,9 +36,8 @@ app.get("/", (req, res) => {
   res.send("Server is running");
 });
 
-app.use(cors());
-app.use(cors({ origin: ["http://localhost:5173", "https://thebotler.vercel.app"] }));
-//app.use(cors({origin: "http://localhost:3000"}));
+//app.use(cors());
+app.use(cors({ origin: ["http://localhost:5173", "http://localhost:5174", "https://thebotler.vercel.app"] }));
 
 app.use(express.json());
 
@@ -46,10 +45,14 @@ app.use(helmet());  //secure HTTP headers
 //rate limiting for ddos attacks
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,  //15 minutes
-  max: 100,                  //each IP up to 100 requests
+  max: 150,                  //each IP up to 100 requests
   message: "Too many requests from IP, please try again later."
 });
-app.use(limiter);
+
+
+//app.use(limiter);
+app.use("/users/login", limiter);
+app.use("/menu/:id/table", limiter);
 
 //prevent NoSQL injection
 app.use(mongoSanitize());

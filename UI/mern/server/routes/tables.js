@@ -1,4 +1,3 @@
-// server/routes/tables.js
 import express from "express";
 import Table from "../models/Table.js";
 import Order from "../models/Order.js";
@@ -26,9 +25,7 @@ async function startHistory(robotId, action, tableId = null, orderId = null) {
   });
 }
 
-// choose robot according to rules
 async function findRobotForSeating() {
-  // prefer awaiting instruction
   const awaiting = await Robot.findOne({ action: "awaiting instruction" }).sort({
     updatedAt: 1,
   });
@@ -36,7 +33,6 @@ async function findRobotForSeating() {
     return { robot: awaiting, mode: "immediate" };
   }
 
-  // then charging
   const charging = await Robot.findOne({ action: "charging" }).sort({
     batteryLevel: -1,
   });
@@ -47,17 +43,14 @@ async function findRobotForSeating() {
     return { robot: charging, mode: "pending" };
   }
 
-  // no awaiting/charging robots, but maybe others (serving, fetching, etc.)
   const busy = await Robot.findOne({});
   if (busy) {
     return { robot: busy, mode: "busy" };
   }
 
-  // no robots at all
   return { robot: null, mode: "none" };
 }
 
-// get all tables
 router.get("/", authOptional, async (req, res) => {
   try {
     const isStaff = req.user && ["admin", "staff"].includes(req.user.role);
@@ -74,7 +67,6 @@ router.get("/", authOptional, async (req, res) => {
   }
 });
 
-// get one table
 router.get("/:id", authOptional, async (req, res) => {
   try {
     const isStaff = req.user && ["admin", "staff"].includes(req.user.role);
@@ -92,7 +84,6 @@ router.get("/:id", authOptional, async (req, res) => {
   }
 });
 
-// seat a table (assign robot + create/reset pending order)
 router.patch("/:id/seat", auth, async (req, res) => {
   try {
     if (!["admin", "staff"].includes(req.user.role)) {
@@ -128,20 +119,17 @@ router.patch("/:id/seat", auth, async (req, res) => {
         .json({ message: "No robots configured for this restaurant" });
     }
 
-    // find or create pending order for this table
     let order = await Order.findOne({
       table: tableId,
       status: "Pending",
     }).sort({ createdAt: -1 });
 
     if (order) {
-      // reset existing pending order
       order.items = [];
       order.status = "Pending";
       order.totalPrice = 0;
       order.menu = null;
     } else {
-      // create new pending order
       order = new Order({
         table: tableId,
         user: req.user?._id || null,
@@ -153,30 +141,31 @@ router.patch("/:id/seat", auth, async (req, res) => {
       });
     }
 
-    // robot "knows" the table/order even when charging
     order.waiter = robot._id;
     await order.save();
 
+    robot.pendingAssignment = { table: tableId, order: order._id };
+
     if (mode === "immediate") {
       await endCurrentHistory(robot._id);
-
       robot.action = "serving";
-      robot.pendingAssignment = { table: null, order: null };
       await robot.save();
-
       await startHistory(robot._id, "serving", tableId, order._id);
     }
 
     if (mode === "pending") {
-      robot.pendingAssignment = { table: tableId, order: order._id };
       await robot.save();
-      // robot stays "charging", history continues as charging
     }
 
     const populatedOrder = await Order.findById(order._id)
       .populate("table", "tableNumber headCount isOccupied")
       .populate("waiter", "name")
       .populate("menu", "name");
+
+    const populatedRobot = await Robot.findById(robot._id).populate(
+      "pendingAssignment.table",
+      "tableNumber"
+    );
 
     res.status(200).json({
       message:
@@ -185,7 +174,7 @@ router.patch("/:id/seat", auth, async (req, res) => {
           : "Table seated; robot will attend after charging",
       table,
       order: populatedOrder,
-      waiter: robot,
+      waiter: populatedRobot,
     });
   } catch (err) {
     res
@@ -194,7 +183,6 @@ router.patch("/:id/seat", auth, async (req, res) => {
   }
 });
 
-// mark table as left (archive order + free robot)
 router.patch("/:id/leave", auth, async (req, res) => {
   try {
     if (!["admin", "staff"].includes(req.user.role)) {
@@ -245,7 +233,6 @@ router.patch("/:id/leave", auth, async (req, res) => {
   }
 });
 
-// create table
 router.post("/", auth, admin, async (req, res) => {
   try {
     const { tableNumber, headCount, isOccupied } = req.body;
@@ -264,7 +251,6 @@ router.post("/", auth, admin, async (req, res) => {
   }
 });
 
-// generic table update
 router.patch("/:id", auth, async (req, res) => {
   try {
     const updateTable = await Table.findByIdAndUpdate(
@@ -283,7 +269,6 @@ router.patch("/:id", auth, async (req, res) => {
   }
 });
 
-// delete table
 router.delete("/:id", auth, admin, async (req, res) => {
   try {
     const deletTable = await Table.findByIdAndDelete(req.params.id);

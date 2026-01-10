@@ -12,17 +12,13 @@ function ControlCentre() {
 
   if (!user) return null;
 
-  // Define accessible links by role
   const baseLinks = [
-    { label: "Help", path: "/pages/admin/help" },
     { label: "Order History", path: "/pages/admin/history" },
     { label: "Track Robots", path: "/pages/admin/tracker" },
     { label: "Assign Tables", path: "/pages/admin/assign" },
   ];
 
   const adminLinks = [
-    { label: "Edit Menu Items", path: "/pages/admin/itemEdits" },
-    { label: "Edit Menus", path: "/pages/admin/menusEdit" },
     { label: "Manage Users", path: "/pages/admin/users" },
   ];
 

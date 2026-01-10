@@ -26,71 +26,72 @@ export default function SubcategoryItemsPage() {
 
     if (loading)
         return (
-            <div className="flex items-center justify-center h-screen text-xl">
+            <div className="flex items-center justify-center h-screen text-xl font-inter text-center">
                 Loading subcategory...
             </div>
         );
 
     if (error)
         return (
-            <div className="flex items-center justify-center h-screen text-red-600 text-xl">
+            <div className="flex items-center justify-center h-screen text-red-600 text-xl font-inter text-center">
                 Error: {error}
             </div>
         );
 
     if (!subcategory)
         return (
-            <div className="flex items-center justify-center h-screen text-gray-600 text-xl">
+            <div className="flex items-center justify-center h-screen text-gray-600 text-xl font-inter text-center">
                 No subcategory found
             </div>
         );
 
     return (
-        <div className="min-h-screen bg-gray-50 py-10 px-5">
+        <div className="min-h-screen bg-blue-50 py-10 px-6 font-inter text-gray-900 text-center">
             <div className="max-w-4xl mx-auto">
-                {/* Back button */}
                 <button
                     onClick={() => navigate(-1)}
-                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 mb-6"
+                    className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 mb-6 text-lg mx-auto block"
                 >
                     ← Back
                 </button>
 
-                <h1 className="text-4xl font-bold text-center text-indigo-600 mb-8">
+                <h1 className="text-4xl md:text-5xl font-bold text-blue-700 mb-6">
                     {subcategory.name}
                 </h1>
 
-                <p className="text-gray-600 text-center mb-10">
+                <p className="text-gray-700 text-lg mb-10 leading-relaxed">
                     {subcategory.description || "Explore delicious items below"}
                 </p>
 
-                {/* Items */}
                 {subcategory.items && subcategory.items.length > 0 ? (
-                    <div className="grid md:grid-cols-2 gap-6">
+                    <div className="grid md:grid-cols-2 gap-8">
                         {subcategory.items.map((item) => (
                             <div
                                 key={item._id}
-                                className="border border-gray-200 rounded-2xl p-6 bg-white shadow-sm hover:shadow-lg transition cursor-pointer"
+                                className="border border-blue-100 rounded-2xl p-6 bg-white shadow-sm hover:shadow-md transition cursor-pointer"
                             >
-                                <h2 className="text-2xl font-semibold mb-2">{item.name}</h2>
-                                <p className="text-gray-600 mb-2">{item.description}</p>
-                                <p className="font-semibold text-indigo-700">
+                                <h2 className="text-2xl font-semibold mb-2 text-blue-700">
+                                    {item.name}
+                                </h2>
+                                <p className="text-gray-700 text-lg mb-3">
+                                    {item.description}
+                                </p>
+                                <p className="font-semibold text-blue-700 text-lg">
                                     Price: £{item.price?.toFixed(2) ?? "N/A"}
                                 </p>
                             </div>
                         ))}
                     </div>
                 ) : (
-                    <p className="text-center text-gray-500">No items available.</p>
+                    <p className="text-gray-500 text-lg">No items available.</p>
                 )}
 
-                {/* Nested subcategories */}
                 {subcategory.children && subcategory.children.length > 0 && (
-                    <div className="mt-10">
-                        <h2 className="text-2xl font-bold mb-4 text-indigo-600 text-center">
+                    <div className="mt-12">
+                        <h2 className="text-2xl font-bold mb-6 text-blue-700">
                             More Options
                         </h2>
-                        <div className="grid md:grid-cols-2 gap-6">
+                        <div className="grid md:grid-cols-2 gap-8">
                             {subcategory.children.map((child) => (
                                 <div
                                     key={child._id}
@@ -99,10 +100,14 @@ export default function SubcategoryItemsPage() {
                                             `/menu/${menuId}/table/${tableId}/sub/${child._id}`
                                         )
                                     }
-                                    className="cursor-pointer border border-gray-200 rounded-2xl p-6 bg-white shadow-sm hover:shadow-lg transition"
+                                    className="cursor-pointer border border-blue-100 rounded-2xl p-6 bg-white shadow-sm hover:shadow-md transition"
                                 >
-                                    <h3 className="text-xl font-semibold">{child.name}</h3>
-                                    <p className="text-gray-600">{child.description}</p>
+                                    <h3 className="text-xl font-semibold text-blue-700 mb-2">
+                                        {child.name}
+                                    </h3>
+                                    <p className="text-gray-700 text-lg">
+                                        {child.description}
+                                    </p>
                                 </div>
                             ))}
                         </div>

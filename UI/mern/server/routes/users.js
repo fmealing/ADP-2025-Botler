@@ -10,7 +10,7 @@ dotenv.config();
 const router = express.Router();
 
 
-router.post("/register", async (req, res) => {
+router.post("/register", auth, admin, async (req, res) => {
   try {
     let { username, password, role } = req.body;
     username = username?.trim();
@@ -34,9 +34,8 @@ router.post("/register", async (req, res) => {
   }
 });
 
-/* ----------------------------------------
-   LOGIN
----------------------------------------- */
+
+// Login
 router.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -70,9 +69,8 @@ router.post("/login", async (req, res) => {
   }
 });
 
-/* ----------------------------------------
-   GET CURRENT USER
----------------------------------------- */
+
+// Get a user
 router.get("/me", auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
@@ -82,9 +80,8 @@ router.get("/me", auth, async (req, res) => {
   }
 });
 
-/* ----------------------------------------
-   UPDATE CURRENT USER (username/password)
----------------------------------------- */
+
+// Update a user
 router.patch("/me", auth, async (req, res) => {
   try {
     const updates = {};
@@ -108,9 +105,8 @@ router.patch("/me", auth, async (req, res) => {
   }
 });
 
-/* ----------------------------------------
-   ADMIN: GET ALL USERS
----------------------------------------- */
+
+//Get all users
 router.get("/", auth, admin, async (req, res) => {
   try {
     const users = await User.find().select("-password");
@@ -120,9 +116,8 @@ router.get("/", auth, admin, async (req, res) => {
   }
 });
 
-/* ----------------------------------------
-   ADMIN: UPDATE USER (username, role)
----------------------------------------- */
+
+// Update any user (admin privilige)
 router.patch("/:id", auth, admin, async (req, res) => {
   try {
     const updates = {};
@@ -148,9 +143,8 @@ router.patch("/:id", auth, admin, async (req, res) => {
   }
 });
 
-/* ----------------------------------------
-   ADMIN: RESET USER PASSWORD
----------------------------------------- */
+
+// New password patch
 router.patch("/:id/reset-password", auth, admin, async (req, res) => {
   try {
     const { newPassword } = req.body;
@@ -175,9 +169,7 @@ router.patch("/:id/reset-password", auth, admin, async (req, res) => {
   }
 });
 
-/* ----------------------------------------
-   ADMIN: DELETE USER
----------------------------------------- */
+// delete user- admin privilige
 router.delete("/:id", auth, admin, async (req, res) => {
   try {
     const deleted = await User.findByIdAndDelete(req.params.id);

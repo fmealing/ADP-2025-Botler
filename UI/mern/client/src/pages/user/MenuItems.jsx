@@ -1,13 +1,11 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { useNavigate, useParams, useOutletContext } from "react-router-dom";
 import { updateOrderItems } from "../../utils/api";
 
-
-
 function MenuItemsPage() {
-  const {RequestLeave} = useOutletContext();
-  const { id, menuId, subId, tableId } = useParams(); 
+  const { RequestLeave } = useOutletContext();
+  const { id, menuId, subId, tableId } = useParams();
   const navigate = useNavigate();
   const [menu, setMenu] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -15,14 +13,33 @@ function MenuItemsPage() {
   const [error, setError] = useState("");
   const [order, setOrder] = useState([]);
   const [breadcrumbs, setBreadcrumbs] = useState([]);
-
   const [orderId, setOrderId] = useState(null);
 
   useEffect(() => {
-  const storedId = localStorage.getItem("currentOrderId");
+    const storedId = localStorage.getItem("currentOrderId");
     if (storedId) setOrderId(storedId);
   }, []);
 
+  // ✅ FIX: hydrate existing order items when returning from checkout
+  useEffect(() => {
+    async function loadExistingOrder() {
+      if (!orderId) return;
+
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/orders/${orderId}`
+        );
+        if (!res.ok) return;
+
+        const data = await res.json();
+        if (Array.isArray(data.items)) {
+          setOrder(data.items);
+        }
+      } catch { }
+    }
+
+    loadExistingOrder();
+  }, [orderId]);
 
   useEffect(() => {
     async function fetchData() {
@@ -90,46 +107,47 @@ function MenuItemsPage() {
 
   if (loading)
     return (
-      <div className="flex items-center justify-center h-screen text-xl">
+      <div className="flex items-center justify-center h-screen text-xl font-inter text-center">
         Loading menu items...
       </div>
     );
 
   if (error)
     return (
-      <div className="flex items-center justify-center h-screen text-red-600 text-xl">
+      <div className="flex items-center justify-center h-screen text-red-600 text-xl font-inter text-center">
         Error: {error}
       </div>
     );
 
-  if (!menu) return <p className="text-center mt-10">No menu found</p>;
+  if (!menu) return <p className="mt-10 font-inter text-center">No menu found</p>;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-5">
+    <div className="min-h-screen bg-blue-50 py-10 px-6 font-inter text-gray-900 text-center">
       <button
         onClick={() => {
-           console.log("%c[Back button click]", "color: green; font-weight: bold;", "RequestLeave type:", typeof RequestLeave);
           if (subId) {
             navigate(-1);
-          } else { RequestLeave(); }
+          } else {
+            RequestLeave();
+          }
         }}
-        className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 mb-6"
+        className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 mb-6 text-lg self-start text-left block"
       >
         ← Back
       </button>
 
       {breadcrumbs.length > 0 && (
-        <nav className="flex justify-center mb-6 text-gray-600 text-sm">
+        <nav className="mb-6 text-gray-600 text-base">
           {breadcrumbs.map((crumb, index) => (
             <span key={index}>
               {crumb.type === "current" ? (
-                <span className="font-semibold text-indigo-700">
+                <span className="font-semibold text-blue-700">
                   {crumb.name}
                 </span>
               ) : (
                 <button
                   onClick={() => handleBreadcrumbClick(crumb)}
-                  className="hover:text-indigo-600 underline"
+                  className="hover:text-blue-700 underline"
                 >
                   {crumb.name}
                 </button>
@@ -142,7 +160,7 @@ function MenuItemsPage() {
         </nav>
       )}
 
-      <h1 className="text-4xl font-bold text-center text-indigo-600 mb-10">
+      <h1 className="text-4xl md:text-5xl font-bold text-blue-700 mb-10">
         {menu.name || "Subcategory"}
       </h1>
 
@@ -156,47 +174,45 @@ function MenuItemsPage() {
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-  {menu.subcategories?.map((sub) => (
-    <div
-      key={sub._id}
-      onClick={() =>
-        navigate(
-          `/menu/${menu._id}/table/${menu.tableId || tableId || "none"}/sub/${sub._id}`
-        )
-      }
-      className="cursor-pointer bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition transform hover:-translate-y-1"
-    >
-      {/* Subcategory Image */}
-      {sub.picture && (
-        <div className="h-56 w-full overflow-hidden">
-          <img
-            //src={`${import.meta.env.VITE_API_URL}${sub.picture}`} if pictures in backend
-            src = {sub.picture}
-            alt={sub.name}
-            className="object-cover w-full h-full"
-          />
-        </div>
-      )}
-      {/* Subcategory Info */}
-      <div className="p-6 text-center">
-        <h2 className="text-2xl font-semibold text-indigo-700 mb-2">
-          {sub.name}
-        </h2>
-        <p className="text-gray-600">{sub.description}</p>
-        <button className="mt-4 bg-indigo-600 text-white py-2 px-6 rounded-lg font-semibold hover:bg-indigo-700">
-          View {sub.name}
-        </button>
+            {menu.subcategories?.map((sub) => (
+              <div
+                key={sub._id}
+                onClick={() =>
+                  navigate(
+                    `/menu/${menu._id}/table/${menu.tableId || tableId || "none"}/sub/${sub._id}`
+                  )
+                }
+                className="cursor-pointer bg-white rounded-2xl overflow-hidden border border-blue-100 shadow-sm hover:shadow-md transition"
+              >
+                {sub.picture && (
+                  <div className="h-56 w-full overflow-hidden">
+                    <img
+                      src={sub.picture}
+                      alt={sub.name}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                )}
+                <div className="p-6">
+                  <h2 className="text-2xl font-semibold text-blue-700 mb-2">
+                    {sub.name}
+                  </h2>
+                  <p className="text-gray-700 text-lg">{sub.description}</p>
+                  <button className="mt-4 bg-blue-600 text-white py-3 px-6 rounded-xl font-semibold text-lg hover:bg-blue-700">
+                    View {sub.name}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-    </div>
-  ))}
-  </div>
-)}
-</div>
+
       {order.length > 0 && (
-        <div className="flex justify-center mt-10">
+        <div className="mt-10">
           <button
             onClick={() => navigate("/checkout")}
-            className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold text-lg hover:bg-green-700 transition"
+            className="bg-green-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-green-700 transition"
           >
             Proceed to Checkout
           </button>
@@ -211,13 +227,15 @@ function MenuItemsPage() {
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           {selectedItem && (
-            <Dialog.Panel className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-lg">
+            <Dialog.Panel className="w-full max-w-lg rounded-2xl bg-white p-8 shadow-lg text-center">
               <Dialog.Title className="text-2xl font-semibold mb-4">
                 {selectedItem.name}
               </Dialog.Title>
 
-              <p className="text-gray-600 mb-3">{selectedItem.description}</p>
-              <p className="text-indigo-700 font-semibold mb-6">
+              <p className="text-gray-700 mb-3 text-lg">
+                {selectedItem.description}
+              </p>
+              <p className="text-blue-700 font-semibold text-lg mb-6">
                 £{selectedItem.price?.toFixed(2)}
               </p>
 
@@ -237,53 +255,48 @@ function MenuItemsPage() {
           )}
         </div>
       </Dialog>
-
     </div>
   );
 }
 
-{/* ---------- Subcategory Section ---------- */}
-/* ---------- Subcategory Section ---------- */
 function SubcategorySection({ sub, onSelectItem, tableId, menuId }) {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border">
-      <h2 className="text-2xl font-semibold mb-2">{sub.name}</h2>
-      <p className="text-gray-600 mb-4">{sub.description}</p>
+    <div className="bg-white rounded-xl p-6 border border-blue-100 shadow-sm text-center">
+      <h2 className="text-2xl font-semibold mb-2 text-blue-700">{sub.name}</h2>
+      <p className="text-gray-700 mb-4 text-lg">{sub.description}</p>
 
-      {/* Menu Items with Images */}
       {sub.items && sub.items.length > 0 && (
         <div className="grid md:grid-cols-2 gap-6">
           {sub.items.map((item) => (
             <div
               key={item._id}
               onClick={() => onSelectItem(item)}
-              className="cursor-pointer bg-white border rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition transform hover:-translate-y-1"
+              className="cursor-pointer bg-white border border-blue-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition"
             >
-              {/* Item Image */}
               {item.picture ? (
                 <div className="h-48 w-full overflow-hidden">
                   <img
-                    //src={`${import.meta.env.VITE_API_URL}${item.picture}`} //if fetching picture from backend
-                    src = {item.picture}
+                    src={item.picture}
                     alt={item.name}
                     className="object-cover w-full h-full"
                   />
                 </div>
               ) : (
-                <div className="h-48 bg-gray-200 flex items-center justify-center text-gray-500">
+                <div className="h-48 bg-blue-50 flex items-center justify-center text-gray-500">
                   No Image
                 </div>
               )}
 
-              {/* Item Info */}
-              <div className="p-4 text-center">
-                <h3 className="text-xl font-semibold text-indigo-700 mb-1">
+              <div className="p-5">
+                <h3 className="text-xl font-semibold text-blue-700 mb-1">
                   {item.name}
                 </h3>
-                <p className="text-gray-600 mb-2 line-clamp-2">{item.description}</p>
-                <p className="font-semibold text-indigo-700">
+                <p className="text-gray-700 mb-2 line-clamp-2 text-lg">
+                  {item.description}
+                </p>
+                <p className="font-semibold text-blue-700 text-lg">
                   £{item.price?.toFixed(2)}
                 </p>
               </div>
@@ -292,7 +305,6 @@ function SubcategorySection({ sub, onSelectItem, tableId, menuId }) {
         </div>
       )}
 
-      {/* Child Subcategories with Images */}
       {sub.children && sub.children.length > 0 && (
         <div className="mt-8 grid md:grid-cols-2 gap-6">
           {sub.children.map((child) => (
@@ -301,31 +313,30 @@ function SubcategorySection({ sub, onSelectItem, tableId, menuId }) {
               onClick={() =>
                 navigate(`/menu/${menuId}/table/${tableId || "none"}/sub/${child._id}`)
               }
-              className="cursor-pointer bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition transform hover:-translate-y-1"
+              className="cursor-pointer bg-white rounded-2xl overflow-hidden border border-blue-100 shadow-sm hover:shadow-md transition"
             >
-              {/* Child Subcategory Image */}
-              {child.picture? (
+              {child.picture ? (
                 <div className="h-48 w-full overflow-hidden">
                   <img
-                    //src={`${import.meta.env.VITE_API_URL}${child.picture}`} //if getting image from backend
-                    src = {child.picture}
+                    src={child.picture}
                     alt={child.name}
                     className="object-cover w-full h-full"
                   />
                 </div>
               ) : (
-                <div className="h-48 bg-gray-200 flex items-center justify-center text-gray-500">
+                <div className="h-48 bg-blue-50 flex items-center justify-center text-gray-500">
                   No Image
                 </div>
               )}
 
-              {/* Child Info */}
-              <div className="p-5 text-center">
-                <h4 className="text-xl font-semibold text-indigo-700 mb-2">
+              <div className="p-5">
+                <h4 className="text-xl font-semibold text-blue-700 mb-2">
                   {child.name}
                 </h4>
-                <p className="text-gray-600 line-clamp-2">{child.description}</p>
-                <button className="mt-4 bg-indigo-600 text-white py-2 px-6 rounded-lg font-semibold hover:bg-indigo-700">
+                <p className="text-gray-700 line-clamp-2 text-lg">
+                  {child.description}
+                </p>
+                <button className="mt-4 bg-blue-600 text-white py-3 px-6 rounded-xl font-semibold text-lg hover:bg-blue-700">
                   View {child.name}
                 </button>
               </div>
@@ -337,8 +348,6 @@ function SubcategorySection({ sub, onSelectItem, tableId, menuId }) {
   );
 }
 
-
-{/* ---------- Ingredient Popup ---------- */}
 function IngredientSelector({ ingredients, onConfirm, onCancel }) {
   const [removed, setRemoved] = useState([]);
   const [quantity, setQuantity] = useState(1);
@@ -359,17 +368,18 @@ function IngredientSelector({ ingredients, onConfirm, onCancel }) {
   };
 
   return (
-    <main>
-      <h3 className="font-semibold mb-2">Ingredients:</h3>
-      <ul className="space-y-2 mb-4">
+    <main className="text-center">
+      <h3 className="font-semibold mb-3 text-lg">Tick to Remove Ingredient:</h3>
+      <ul className="space-y-3 mb-6">
         {ingredients.length > 0 ? (
           ingredients.map((ing) => (
             <li key={ing._id}>
-              <label className="flex items-center space-x-2">
+              <label className="flex items-center justify-center space-x-3 text-lg">
                 <input
                   type="checkbox"
                   checked={removed.includes(ing._id)}
                   onChange={() => toggleRemove(ing._id)}
+                  className="w-5 h-5"
                 />
                 <span
                   className={
@@ -384,41 +394,41 @@ function IngredientSelector({ ingredients, onConfirm, onCancel }) {
             </li>
           ))
         ) : (
-          <li className="text-gray-500">No ingredients listed.</li>
+          <li className="text-gray-500"></li>
         )}
       </ul>
 
-      <label className="block mb-3">
+      <label className="block mb-4 text-lg">
         <span className="font-semibold">Quantity:</span>
         <input
           type="number"
           min="1"
           value={quantity}
           onChange={(e) => setQuantity(Number(e.target.value))}
-          className="border border-gray-300 rounded-lg px-2 py-1 ml-2 w-20"
+          className="border border-gray-300 rounded-lg px-3 py-2 ml-3 w-24 text-lg"
         />
       </label>
 
-      <label className="block mb-3">
+      <label className="block mb-4 text-lg">
         <span className="font-semibold">Special Instructions:</span>
         <textarea
           value={special}
           onChange={(e) => setSpecial(e.target.value)}
-          className="w-full border border-gray-300 rounded-lg p-2 mt-1"
+          className="w-full border border-gray-300 rounded-lg p-3 mt-2 text-lg"
           placeholder="e.g. No sauce, extra cheese"
         />
       </label>
 
-      <div className="flex justify-end space-x-3 mt-5">
+      <div className="flex justify-center space-x-4 mt-6">
         <button
           onClick={onCancel}
-          className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
+          className="px-5 py-3 bg-gray-200 rounded-xl hover:bg-gray-300 text-lg"
         >
           Cancel
         </button>
         <button
           onClick={handleConfirm}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+          className="px-5 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 text-lg"
         >
           Add to Order
         </button>

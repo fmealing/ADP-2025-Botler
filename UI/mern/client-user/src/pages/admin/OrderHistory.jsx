@@ -12,12 +12,10 @@ function OrderHistory() {
 
   const [user, setUser] = useState(null);
 
-  // Controls
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  // Pagination
   const [page, setPage] = useState(1);
   const PER_PAGE = 10;
 
@@ -26,46 +24,68 @@ function OrderHistory() {
     if (u) setUser(JSON.parse(u));
   }, []);
 
-  useEffect(() => {
-    async function fetchOrders() {
-      try {
-        const token = localStorage.getItem("token");
+  async function fetchOrders() {
+    try {
+      const token = localStorage.getItem("token");
 
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/orders`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/orders`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Failed to fetch orders");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to fetch orders");
 
-        setOrders(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
+      setOrders(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     fetchOrders();
   }, []);
 
-  // Filter + search + sort
+  async function handleSendOrder(orderId) {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/orders/${orderId}/send`,
+        {
+          method: "PATCH",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to send order");
+
+      setOrders((prev) =>
+        prev.map((o) => (o._id === data._id ? data : o))
+      );
+
+      // force re-sync to avoid stale robot/order state
+      fetchOrders();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
   useEffect(() => {
     let list = [...orders];
 
-    // Search by table number
     if (search.trim() !== "") {
       list = list.filter((o) =>
         o.table?.tableNumber?.toString().includes(search.trim())
       );
     }
 
-    // Filter by status
     if (statusFilter !== "all") {
       list = list.filter((o) => o.status === statusFilter);
     }
 
-    // Sorting
     if (sortBy === "newest") {
       list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
@@ -80,10 +100,9 @@ function OrderHistory() {
     }
 
     setFilteredOrders(list);
-    setPage(1); // reset page on filter change
+    setPage(1);
   }, [orders, search, sortBy, statusFilter]);
 
-  // Paginated slice
   const paginated = useMemo(() => {
     const start = (page - 1) * PER_PAGE;
     return filteredOrders.slice(start, start + PER_PAGE);
@@ -91,7 +110,6 @@ function OrderHistory() {
 
   const totalPages = Math.ceil(filteredOrders.length / PER_PAGE);
 
-  // Status badge colors
   const statusColors = {
     Pending: "bg-yellow-300 text-yellow-800",
     "In-progress": "bg-orange-300 text-orange-800",
@@ -129,7 +147,6 @@ function OrderHistory() {
         Order History
       </h1>
 
-      {/* Controls */}
       <div className="max-w-5xl mx-auto mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
         <input
           type="text"
@@ -165,7 +182,6 @@ function OrderHistory() {
         </select>
       </div>
 
-      {/* Orders */}
       <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
         {paginated.map((order) => (
           <div
@@ -176,7 +192,6 @@ function OrderHistory() {
               Order #{order._id.slice(-5)}
             </h2>
 
-            {/* Status */}
             <span
               className={`px-3 py-1 rounded-full text-sm font-semibold ${statusColors[order.status]}`}
             >
@@ -208,7 +223,6 @@ function OrderHistory() {
               {new Date(order.updatedAt).toLocaleString()}
             </p>
 
-            {/* Admin-only section */}
             {user?.role === "admin" && (
               <div className="border-t pt-4 mt-4">
                 <h3 className="text-xl font-semibold text-indigo-700 mb-3">
@@ -244,13 +258,21 @@ function OrderHistory() {
                 <p className="text-right mt-4 text-lg font-bold text-indigo-700">
                   Total: £{order.totalPrice?.toFixed(2) || "0.00"}
                 </p>
+
+                {order.status === "Submitted" && (
+                  <button
+                    onClick={() => handleSendOrder(order._id)}
+                    className="mt-4 w-full bg-indigo-600 text-white py-2 rounded-xl hover:bg-indigo-700 font-semibold"
+                  >
+                    Click to Send Robot to Table (Food Loaded)
+                  </button>
+                )}
               </div>
             )}
           </div>
         ))}
       </div>
 
-      {/* Pagination Controls */}
       {totalPages > 1 && (
         <div className="flex justify-center gap-4 mt-10">
           <button

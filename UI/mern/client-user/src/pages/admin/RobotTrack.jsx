@@ -9,36 +9,29 @@ function RobotTrack() {
   const [user, setUser] = useState(null);
 
   const [robots, setRobots] = useState([]);
-  const [orders, setOrders] = useState([]);
   const [filteredRobots, setFilteredRobots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Controls
   const [searchName, setSearchName] = useState("");
   const [actionFilter, setActionFilter] = useState("all");
   const [tableSearch, setTableSearch] = useState("");
 
-  // Pagination
   const [page, setPage] = useState(1);
   const PER_PAGE = 6;
 
-  // History data per robot
   const [expandedRobotId, setExpandedRobotId] = useState(null);
   const [historiesByRobot, setHistoriesByRobot] = useState({});
 
-  // Emergency Stop Modal
   const [stopTarget, setStopTarget] = useState(null);
   const [stopLoading, setStopLoading] = useState(false);
   const [stopError, setStopError] = useState("");
 
-  // Load user
   useEffect(() => {
     const u = localStorage.getItem("user");
     if (u) setUser(JSON.parse(u));
   }, []);
 
-  // Fetch robots
   useEffect(() => {
     async function fetchRobots() {
       try {
@@ -63,39 +56,6 @@ function RobotTrack() {
     fetchRobots();
   }, []);
 
-  // Fetch orders (used to determine assigned table)
-  useEffect(() => {
-    async function fetchOrders() {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(`${API_BASE}/orders`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const content = res.headers.get("content-type");
-        if (content?.includes("text/html")) throw new Error("Invalid API response");
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Failed to fetch orders");
-
-        setOrders(data);
-      } catch (err) {
-        console.error("Order fetch failed:", err.message);
-        setOrders([]); // fail gracefully
-      }
-    }
-    fetchOrders();
-  }, []);
-
-  // Determine current table from active order
-  const getCurrentTable = (robotId) => {
-    const liveOrder = orders.find(
-      (o) => o.waiter === robotId && o.status !== "Completed" && o.status !== "Cancelled"
-    );
-    return liveOrder?.table?.tableNumber ?? null;
-  };
-
-  // Fetch robot history
   const fetchRobotHistory = async (robotId) => {
     setHistoriesByRobot((prev) => ({
       ...prev,
@@ -126,7 +86,6 @@ function RobotTrack() {
     }
   };
 
-  // Trigger history load when filtering by table number
   useEffect(() => {
     if (tableSearch.trim() === "") return;
     robots.forEach((r) => {
@@ -134,10 +93,8 @@ function RobotTrack() {
         fetchRobotHistory(r._id);
       }
     });
-    // eslint-disable-next-line
   }, [tableSearch]);
 
-  // Apply filters
   useEffect(() => {
     let list = [...robots];
 
@@ -166,7 +123,6 @@ function RobotTrack() {
     setPage(1);
   }, [robots, searchName, actionFilter, tableSearch, historiesByRobot]);
 
-  // Pagination
   const paginated = useMemo(() => {
     const start = (page - 1) * PER_PAGE;
     return filteredRobots.slice(start, start + PER_PAGE);
@@ -174,7 +130,6 @@ function RobotTrack() {
 
   const totalPages = Math.ceil(filteredRobots.length / PER_PAGE) || 1;
 
-  // Colors
   const actionColors = {
     serving: "bg-green-100 text-green-800",
     "taking order": "bg-blue-100 text-blue-800",
@@ -195,7 +150,6 @@ function RobotTrack() {
     return "bg-green-500";
   };
 
-  // Emergency Stop: sets action -> awaiting instruction
   const handleConfirmStop = async () => {
     if (!stopTarget) return;
     setStopLoading(true);
@@ -230,7 +184,6 @@ function RobotTrack() {
     }
   };
 
-  // Loading & errors
   if (loading)
     return (
       <div className="flex items-center justify-center h-screen text-xl">
@@ -258,7 +211,6 @@ function RobotTrack() {
         Robot Tracker
       </h1>
 
-      {/* Controls */}
       <div className="max-w-5xl mx-auto mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
         <input
           type="text"
@@ -290,7 +242,6 @@ function RobotTrack() {
         />
       </div>
 
-      {/* Cards */}
       <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
         {paginated.map((robot) => (
           <div
@@ -302,15 +253,13 @@ function RobotTrack() {
                 {robot.name}
               </h2>
               <span
-                className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                  actionColors[robot.action] || "bg-gray-200 text-gray-800"
-                }`}
+                className={`px-3 py-1 rounded-full text-sm font-semibold ${actionColors[robot.action] || "bg-gray-200 text-gray-800"
+                  }`}
               >
                 {robot.action}
               </span>
             </div>
 
-            {/* Battery */}
             <div className="mt-2 mb-4">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-gray-700 font-semibold">Battery</span>
@@ -337,10 +286,9 @@ function RobotTrack() {
               </div>
             </div>
 
-            {/* Meta */}
             <p className="text-gray-700 text-sm">
               <span className="font-semibold">Current Table:</span>{" "}
-              {getCurrentTable(robot._id) ?? "—"}
+              {robot.pendingAssignment?.table?.tableNumber ?? "—"}
             </p>
 
             <p className="text-gray-700 text-sm mt-3">
@@ -356,7 +304,6 @@ function RobotTrack() {
                 : "—"}
             </p>
 
-            {/* History (Admin Only) */}
             {user?.role === "admin" && (
               <div className="border-t pt-4 mt-4">
                 <button
@@ -410,9 +357,7 @@ function RobotTrack() {
                             <p className="text-gray-700">
                               <span className="font-semibold">Order:</span>{" "}
                               {h.order
-                                ? `#${h.order._id.slice(
-                                    -5
-                                  )} (${h.order.status})`
+                                ? `#${h.order._id.slice(-5)} (${h.order.status})`
                                 : "—"}
                             </p>
                             <p className="text-gray-600 text-xs">
@@ -434,7 +379,6 @@ function RobotTrack() {
               </div>
             )}
 
-            {/* Emergency Stop */}
             <button
               onClick={() => {
                 setStopTarget(robot);
@@ -448,7 +392,6 @@ function RobotTrack() {
         ))}
       </div>
 
-      {/* Pagination Controls */}
       {filteredRobots.length > 0 && (
         <div className="flex justify-center gap-4 mt-10">
           <button
@@ -479,7 +422,6 @@ function RobotTrack() {
         </p>
       )}
 
-      {/* Emergency Stop Modal */}
       {stopTarget && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full">
