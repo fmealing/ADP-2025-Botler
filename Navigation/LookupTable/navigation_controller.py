@@ -1,3 +1,22 @@
+"""
+TODOs:
+- Turn LiDAR code into a version that returns "LEFT", "RIGHT", "FORWARD", or "STOP"
+- In this file define the states 
+    - S1: rotate left 
+    - S2: centre tag horizontally 
+    - S3: Move forward 
+    - S4: Avoid obstacles
+    - S5: Stop
+
+- Define state transitions
+    - S1→S2: AprilTag corresponding to table is identified
+    - S2→S3: Once AprilTag is centred horizontally 
+    - S1, S2, S3 → S4: If LiDAR detects obstacle in front of  threshold
+    - S4 → S1: After obstacle sequence is completed
+    - S3 → S5: After robot is in front of table
+- Implement interrupt for the LiDAR obstacle detectiohn
+"""
+
 import cv2
 from apriltag_navigator import AprilTagNavigator
 
@@ -15,7 +34,7 @@ class NavigationController:
     def run(self):
         while True:
             if self.mode == MODE_APRILTAG:
-                command, aligned, frame = self.apriltag_nav.step()
+                command, aligned, distance, frame = self.apriltag_nav.step()
 
             if frame is not None:
                 # Mode label
@@ -39,6 +58,18 @@ class NavigationController:
                     (0, 255, 0) if command == "FORWARD" else (0, 165, 255),
                     3
                 )
+
+                if distance is not None:
+                    cv2.putText(
+                    frame,
+                    f"DIST: {(distance*0.7):.2f} m", # Sorry :( (had to be done)
+                    (20, 130),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.9,
+                    (255, 255, 255),
+                    2
+                )
+
 
                 cv2.imshow("Navigation", frame)
 

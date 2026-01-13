@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from pupil_apriltags import Detector
 
+
 class AprilTagNavigator:
     def __init__(
         self,
@@ -45,6 +46,17 @@ class AprilTagNavigator:
             refine_edges=1
         )
 
+    def _estimate_distance_camera_to_tag(self, det):
+        corners = det.corners
+        pixel_width = np.linalg.norm(corners[0] - corners[1])
+
+        if pixel_width <= 0:
+            return None
+
+        distance = (self.FX * self.TAG_SIZE) / pixel_width
+        return distance
+
+
     def _find_target_tag(self, detections):
         for det in detections:
             if det.tag_id in self.target_tags:
@@ -56,6 +68,7 @@ class AprilTagNavigator:
         Returns:
             command (str): LEFT / RIGHT / FORWARD 
             aligned (bool): True when camera is facing table
+            distance (float | None): meters from camera to tag
             frame (np.array): Debug frame
         """
         ret, frame = self.cap.read()
@@ -75,7 +88,10 @@ class AprilTagNavigator:
         target = self._find_target_tag(detections)
 
         if target is None:
-            return "LEFT", False, frame
+            return "LEFT", False, None, frame
+
+        
+        distance = self._estimate_distance_camera_to_tag(target)
 
         tag_x, tag_y = map(int, target.center)
         error = tag_x - self.img_cx
@@ -83,11 +99,11 @@ class AprilTagNavigator:
         cv2.circle(frame, (tag_x, tag_y), 6, (0, 255, 0), -1)
 
         if abs(error) < self.center_tol:
-            return "FORWARD", True, frame
+            return "FORWARD", True, distance, frame
         elif error > 0:
-            return "RIGHT", False, frame
+            return "RIGHT", False, distance, frame
         else:
-            return "LEFT", False, frame
+            return "LEFT", False, distance, frame
 
     def shutdown(self):
         self.cap.release()
