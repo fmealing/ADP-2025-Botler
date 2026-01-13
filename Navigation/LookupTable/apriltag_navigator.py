@@ -99,6 +99,8 @@ class AprilTagNavigator:
         cv2.circle(frame, (tag_x, tag_y), 6, (0, 255, 0), -1)
 
         if abs(error) < self.center_tol:
+            if distance < 0.5:
+                return "STOP", True, distance, frame
             return "FORWARD", True, distance, frame
         elif error > 0:
             return "RIGHT", False, distance, frame
