@@ -14,7 +14,7 @@ SQUARE_SIZE = 0.025        # meters (25 mm)
 criteria = (
     cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER,
     30,
-    0.001
+    0.001   
 )
 
 # -----------------------------
