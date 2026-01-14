@@ -62,7 +62,7 @@ class NavigationController:
                 if distance is not None:
                     cv2.putText(
                     frame,
-                    f"DIST: {(distance*0.7):.2f} m", # Sorry :( (had to be done)
+                    f"DIST: {(distance):.2f} m", 
                     (20, 130),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.9,

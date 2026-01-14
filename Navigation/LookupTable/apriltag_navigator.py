@@ -91,7 +91,7 @@ class AprilTagNavigator:
             return "LEFT", False, None, frame
 
         
-        distance = self._estimate_distance_camera_to_tag(target)
+        distance = self._estimate_distance_camera_to_tag(target) * 0.7
 
         tag_x, tag_y = map(int, target.center)
         error = tag_x - self.img_cx
@@ -99,7 +99,7 @@ class AprilTagNavigator:
         cv2.circle(frame, (tag_x, tag_y), 6, (0, 255, 0), -1)
 
         if abs(error) < self.center_tol:
-            if distance < 0.5:
+            if distance < 0.5: # TODO: Finalise this
                 return "STOP", True, distance, frame
             return "FORWARD", True, distance, frame
         elif error > 0:
