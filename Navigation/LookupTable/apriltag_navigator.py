@@ -73,7 +73,8 @@ class AprilTagNavigator:
         """
         ret, frame = self.cap.read()
         if not ret:
-            return "LEFT", False, None
+            return "LEFT", False, None, None
+
 
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         gray = cv2.undistort(gray, self.K, self.dist)

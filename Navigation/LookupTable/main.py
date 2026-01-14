@@ -6,7 +6,7 @@ def main():
     try:
         controller.run()
     except KeyboardInterrupt:
-        print("\n[INFO] Keyboard interrupt received. Shutting down...")
+        print("\nKeyboard interrupt received. Shutting down...")
     finally:
         controller.shutdown()
 

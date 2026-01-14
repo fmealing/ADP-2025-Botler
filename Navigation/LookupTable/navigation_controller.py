@@ -26,7 +26,6 @@ MODE_LIDAR = 1
 class NavigationController:
     def __init__(self):
         self.mode = MODE_APRILTAG
-
         self.apriltag_nav = AprilTagNavigator(
             target_table=1 # TODO: MAke this dynamic
         )
