@@ -434,7 +434,7 @@ function UserEdit() {
   /* ------------------ LOADING & ERROR UI ------------------ */
   if (loadingUsers) {
     return (
-      <div className="flex items-center justify-center h-screen text-xl">
+      <div className="flex items-center justify-center h-screen text-xl font-inter text-center">
         Loading users...
       </div>
     );
@@ -442,7 +442,7 @@ function UserEdit() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-screen text-red-600 text-xl">
+      <div className="flex items-center justify-center h-screen text-red-600 text-xl font-inter text-center">
         Error: {error}
       </div>
     );
@@ -450,21 +450,21 @@ function UserEdit() {
 
   /* ------------------ RENDER ------------------ */
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-6">
+    <div className="min-h-screen bg-blue-50 py-10 px-6 font-inter text-gray-900 text-center">
       <button
         onClick={() => navigate("/pages/admin/control")}
-        className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 mb-6"
+        className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 mb-6 text-lg self-start text-left block"
       >
         ← Back to Control Centre
       </button>
 
-      <h1 className="text-4xl font-bold text-center text-indigo-600 mb-10">
+      <h1 className="text-4xl md:text-5xl font-bold text-center text-blue-700 mb-10">
         User Management
       </h1>
 
       {/* STAFF & ADMIN CONTROLS + USER LIST (one big box, full width) */}
-      <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-md p-6 border mb-10">
-        <h2 className="text-2xl font-semibold text-indigo-700 mb-6">
+      <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-sm border border-blue-100 p-8 mb-10 text-left">
+        <h2 className="text-2xl font-semibold text-blue-700 mb-6">
           Staff & Admin Controls
         </h2>
 
@@ -475,13 +475,13 @@ function UserEdit() {
             placeholder="Search by username..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full border p-2 rounded-lg"
+            className="w-full border border-blue-100 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-lg"
           />
 
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="w-full border p-2 rounded-lg"
+            className="w-full border border-blue-100 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-lg bg-white"
           >
             <option value="all">All roles</option>
             <option value="admin">Admins</option>
@@ -493,12 +493,12 @@ function UserEdit() {
         {/* Create User Button */}
         <button
           onClick={() => setShowCreateModal(true)}
-          className="mb-6 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+          className="mb-8 bg-green-600 text-white px-8 py-4 rounded-xl hover:bg-green-700 text-lg font-semibold transition"
         >
           + Add New User
         </button>
 
-        <h3 className="text-lg font-semibold text-indigo-700 mt-4 mb-4">
+        <h3 className="text-xl font-semibold text-blue-700 mb-6">
           User Accounts
         </h3>
 
@@ -507,30 +507,30 @@ function UserEdit() {
           {filteredUsers.map((u) => (
             <div
               key={u._id}
-              className="bg-gray-50 rounded-xl p-5 border shadow-sm"
+              className="bg-white rounded-2xl p-8 border border-blue-100 shadow-sm"
             >
-              <h3 className="text-lg font-semibold text-indigo-700">
+              <h3 className="text-xl font-semibold text-blue-700">
                 {u.username}
               </h3>
-              <p className="text-gray-600 mb-2">Role: {u.role}</p>
+              <p className="text-gray-600 mb-3 text-lg">Role: {u.role}</p>
 
               {u.lastLogin && (
-                <p className="text-gray-500 text-sm">
+                <p className="text-gray-500 text-base">
                   Last login: {new Date(u.lastLogin).toLocaleString()}
                 </p>
               )}
 
-              <div className="mt-4 flex gap-3">
+              <div className="mt-6 flex gap-3">
                 <button
                   onClick={() => openEditModal(u)}
-                  className="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm"
+                  className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 text-lg font-semibold transition"
                 >
                   Edit
                 </button>
 
                 <button
                   onClick={() => openDeleteModal(u)}
-                  className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
+                  className="px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 text-lg font-semibold transition"
                 >
                   Delete
                 </button>
@@ -539,7 +539,7 @@ function UserEdit() {
           ))}
 
           {filteredUsers.length === 0 && (
-            <p className="text-center text-gray-500 col-span-full">
+            <p className="text-center text-gray-500 col-span-full text-lg">
               No users found.
             </p>
           )}
@@ -547,71 +547,71 @@ function UserEdit() {
       </div>
 
       {/* YOUR ACCOUNT (separate full-width box) */}
-      <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-md p-6 border">
-        <h2 className="text-2xl font-semibold text-indigo-700 mb-4">
+      <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-sm border border-blue-100 p-8 text-left">
+        <h2 className="text-2xl font-semibold text-blue-700 mb-6">
           Your Account
         </h2>
 
-        <p className="text-gray-600 mb-3">
+        <p className="text-gray-600 mb-6 text-lg">
           Logged in as{" "}
           <span className="font-semibold">{currentUser?.username}</span>{" "}
           ({currentUser?.role})
         </p>
 
         {selfMessage && (
-          <div className="mb-3 text-sm text-center text-indigo-700 bg-indigo-50 rounded-lg py-2 px-3">
+          <div className="mb-6 text-lg text-center text-blue-700 bg-blue-50 border border-blue-100 rounded-xl py-3 px-4">
             {selfMessage}
           </div>
         )}
 
         {/* Username change */}
-        <form onSubmit={handleUpdateSelfUsername} className="space-y-3 mb-6">
-          <h3 className="font-semibold text-gray-800">Change username</h3>
+        <form onSubmit={handleUpdateSelfUsername} className="space-y-4 mb-10">
+          <h3 className="font-semibold text-gray-800 text-xl">Change username</h3>
           <input
             type="text"
             value={usernameSelf}
             onChange={(e) => setUsernameSelf(e.target.value)}
-            className="w-full border p-2 rounded-lg"
+            className="w-full border border-blue-100 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-lg"
           />
           <input
             type="text"
             value={usernameSelfConfirm}
             onChange={(e) => setUsernameSelfConfirm(e.target.value)}
-            className="w-full border p-2 rounded-lg"
+            className="w-full border border-blue-100 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-lg"
             placeholder="Confirm username"
           />
 
           <button
             type="submit"
             disabled={savingSelf}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+            className="bg-blue-600 text-white px-8 py-4 rounded-xl hover:bg-blue-700 disabled:opacity-50 text-lg font-semibold transition"
           >
             Save Username
           </button>
         </form>
 
         {/* Password change */}
-        <form onSubmit={handleUpdateSelfPassword} className="space-y-3">
-          <h3 className="font-semibold text-gray-800">Change password</h3>
+        <form onSubmit={handleUpdateSelfPassword} className="space-y-4">
+          <h3 className="font-semibold text-gray-800 text-xl">Change password</h3>
           <input
             type="password"
             value={passwordSelf}
             onChange={(e) => setPasswordSelf(e.target.value)}
-            className="w-full border p-2 rounded-lg"
+            className="w-full border border-blue-100 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-lg"
             placeholder="New password"
           />
           <input
             type="password"
             value={passwordSelfConfirm}
             onChange={(e) => setPasswordSelfConfirm(e.target.value)}
-            className="w-full border p-2 rounded-lg"
+            className="w-full border border-blue-100 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-lg"
             placeholder="Confirm password"
           />
 
           <button
             type="submit"
             disabled={savingSelf}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+            className="bg-blue-600 text-white px-8 py-4 rounded-xl hover:bg-blue-700 disabled:opacity-50 text-lg font-semibold transition"
           >
             Save Password
           </button>
@@ -620,7 +620,7 @@ function UserEdit() {
         {/* Delete own account */}
         <button
           onClick={() => setShowDeleteSelfModal(true)}
-          className="mt-6 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+          className="mt-10 bg-red-600 text-white px-8 py-4 rounded-xl hover:bg-red-700 text-lg font-semibold transition"
         >
           Delete My Account
         </button>
@@ -628,17 +628,17 @@ function UserEdit() {
 
       {/* DELETE SELF MODAL */}
       {showDeleteSelfModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-xl">
-            <h2 className="text-2xl font-semibold text-red-600 mb-4">
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-6">
+          <div className="bg-white p-8 rounded-2xl w-full max-w-md shadow-sm border border-blue-100 text-left">
+            <h2 className="text-2xl font-semibold text-red-600 mb-6">
               Delete Your Account
             </h2>
 
             {deleteSelfError && (
-              <p className="text-red-600 text-sm mb-3">{deleteSelfError}</p>
+              <p className="text-red-600 text-lg mb-4">{deleteSelfError}</p>
             )}
 
-            <p className="mb-3">
+            <p className="mb-4 text-lg">
               Confirm deletion by entering your password:
             </p>
 
@@ -646,14 +646,14 @@ function UserEdit() {
               type="password"
               value={deleteSelfPassword}
               onChange={(e) => setDeleteSelfPassword(e.target.value)}
-              className="w-full border p-2 rounded-lg mb-4"
+              className="w-full border border-blue-100 p-4 rounded-xl mb-6 focus:outline-none focus:ring-2 focus:ring-blue-600 text-lg"
               placeholder="Password"
             />
 
-            <div className="flex justify-end gap-3">
+            <div className="flex justify-end gap-4">
               <button
                 onClick={() => setShowDeleteSelfModal(false)}
-                className="px-4 py-2 bg-gray-300 rounded-lg"
+                className="px-6 py-3 bg-blue-50 border border-blue-100 rounded-xl hover:bg-blue-100 text-lg font-semibold transition"
               >
                 Cancel
               </button>
@@ -661,7 +661,7 @@ function UserEdit() {
               <button
                 onClick={handleDeleteSelf}
                 disabled={deletingSelf}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+                className="px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 disabled:opacity-50 text-lg font-semibold transition"
               >
                 {deletingSelf ? "Deleting..." : "Delete Account"}
               </button>
@@ -672,58 +672,58 @@ function UserEdit() {
 
       {/* CREATE USER MODAL */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-xl">
-            <h2 className="text-2xl font-semibold text-indigo-700 mb-4">
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-6">
+          <div className="bg-white p-8 rounded-2xl w-full max-w-md shadow-sm border border-blue-100 text-left">
+            <h2 className="text-2xl font-semibold text-blue-700 mb-6">
               Add New User
             </h2>
 
             {createError && (
-              <p className="text-red-600 text-sm mb-3">{createError}</p>
+              <p className="text-red-600 text-lg mb-4">{createError}</p>
             )}
 
-            <form onSubmit={handleCreateUser} className="space-y-4">
+            <form onSubmit={handleCreateUser} className="space-y-5">
               <div>
-                <label className="block font-semibold mb-1">Username</label>
+                <label className="block font-semibold mb-2 text-lg">Username</label>
                 <input
                   type="text"
                   value={newUsername}
                   onChange={(e) => setNewUsername(e.target.value)}
-                  className="w-full border p-2 rounded-lg"
+                  className="w-full border border-blue-100 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-lg"
                   required
                 />
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">Password</label>
+                <label className="block font-semibold mb-2 text-lg">Password</label>
                 <input
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full border p-2 rounded-lg"
+                  className="w-full border border-blue-100 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-lg"
                   required
                 />
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">
+                <label className="block font-semibold mb-2 text-lg">
                   Confirm Password
                 </label>
                 <input
                   type="password"
                   value={newPasswordConfirm}
                   onChange={(e) => setNewPasswordConfirm(e.target.value)}
-                  className="w-full border p-2 rounded-lg"
+                  className="w-full border border-blue-100 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-lg"
                   required
                 />
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">Role</label>
+                <label className="block font-semibold mb-2 text-lg">Role</label>
                 <select
                   value={newRole}
                   onChange={(e) => setNewRole(e.target.value)}
-                  className="w-full border p-2 rounded-lg"
+                  className="w-full border border-blue-100 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-lg bg-white"
                 >
                   <option value="staff">Staff</option>
                   <option value="admin">Admin</option>
@@ -731,18 +731,18 @@ function UserEdit() {
                 </select>
               </div>
 
-              <div className="flex justify-end gap-3 mt-4">
+              <div className="flex justify-end gap-4 mt-6">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 bg-gray-300 rounded-lg"
+                  className="px-6 py-3 bg-blue-50 border border-blue-100 rounded-xl hover:bg-blue-100 text-lg font-semibold transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={creatingUser}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                  className="px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 text-lg font-semibold transition"
                 >
                   {creatingUser ? "Creating..." : "Create User"}
                 </button>
@@ -754,34 +754,34 @@ function UserEdit() {
 
       {/* EDIT USER MODAL */}
       {showEditModal && editingUser && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-xl">
-            <h2 className="text-2xl font-semibold text-indigo-700 mb-4">
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-6">
+          <div className="bg-white p-8 rounded-2xl w-full max-w-md shadow-sm border border-blue-100 text-left">
+            <h2 className="text-2xl font-semibold text-blue-700 mb-6">
               Edit User
             </h2>
 
             {editError && (
-              <p className="text-red-600 text-sm mb-3">{editError}</p>
+              <p className="text-red-600 text-lg mb-4">{editError}</p>
             )}
 
-            <form onSubmit={handleEditUser} className="space-y-4">
+            <form onSubmit={handleEditUser} className="space-y-5">
               <div>
-                <label className="block font-semibold mb-1">Username</label>
+                <label className="block font-semibold mb-2 text-lg">Username</label>
                 <input
                   type="text"
                   value={editUsername}
                   onChange={(e) => setEditUsername(e.target.value)}
-                  className="w-full border p-2 rounded-lg"
+                  className="w-full border border-blue-100 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-lg"
                   required
                 />
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">Role</label>
+                <label className="block font-semibold mb-2 text-lg">Role</label>
                 <select
                   value={editRole}
                   onChange={(e) => setEditRole(e.target.value)}
-                  className="w-full border p-2 rounded-lg"
+                  className="w-full border border-blue-100 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-lg bg-white"
                 >
                   <option value="staff">Staff</option>
                   <option value="admin">Admin</option>
@@ -790,37 +790,37 @@ function UserEdit() {
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">
+                <label className="block font-semibold mb-2 text-lg">
                   Reset Password (optional)
                 </label>
                 <input
                   type="password"
                   value={editPassword}
                   onChange={(e) => setEditPassword(e.target.value)}
-                  className="w-full border p-2 rounded-lg"
+                  className="w-full border border-blue-100 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-lg"
                   placeholder="New password"
                 />
                 <input
                   type="password"
                   value={editPasswordConfirm}
                   onChange={(e) => setEditPasswordConfirm(e.target.value)}
-                  className="w-full border p-2 rounded-lg mt-2"
+                  className="w-full border border-blue-100 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-lg mt-3"
                   placeholder="Confirm new password"
                 />
               </div>
 
-              <div className="flex justify-end gap-3 mt-4">
+              <div className="flex justify-end gap-4 mt-6">
                 <button
                   type="button"
                   onClick={() => setShowEditModal(false)}
-                  className="px-4 py-2 bg-gray-300 rounded-lg"
+                  className="px-6 py-3 bg-blue-50 border border-blue-100 rounded-xl hover:bg-blue-100 text-lg font-semibold transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={editing}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                  className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 text-lg font-semibold transition"
                 >
                   {editing ? "Saving..." : "Save Changes"}
                 </button>
@@ -832,26 +832,26 @@ function UserEdit() {
 
       {/* DELETE USER MODAL */}
       {showDeleteModal && deletingUser && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-xl">
-            <h2 className="text-2xl font-semibold text-red-600 mb-4">
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-6">
+          <div className="bg-white p-8 rounded-2xl w-full max-w-md shadow-sm border border-blue-100 text-left">
+            <h2 className="text-2xl font-semibold text-red-600 mb-6">
               Delete User
             </h2>
 
             {deleteError && (
-              <p className="text-red-600 text-sm mb-3">{deleteError}</p>
+              <p className="text-red-600 text-lg mb-4">{deleteError}</p>
             )}
 
-            <p className="mb-4">
+            <p className="mb-6 text-lg">
               Are you sure you want to delete{" "}
               <span className="font-semibold">{deletingUser.username}</span>?
             </p>
 
-            <div className="flex justify-end gap-3">
+            <div className="flex justify-end gap-4">
               <button
                 type="button"
                 onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 bg-gray-300 rounded-lg"
+                className="px-6 py-3 bg-blue-50 border border-blue-100 rounded-xl hover:bg-blue-100 text-lg font-semibold transition"
               >
                 Cancel
               </button>
@@ -859,7 +859,7 @@ function UserEdit() {
               <button
                 onClick={handleDeleteUser}
                 disabled={deleting}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+                className="px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 disabled:opacity-50 text-lg font-semibold transition"
               >
                 {deleting ? "Deleting..." : "Delete"}
               </button>

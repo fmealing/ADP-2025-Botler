@@ -31,12 +31,12 @@ function ControlCentre() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-      <div className="bg-white text-gray-800 p-8 rounded-2xl shadow-lg w-[90%] max-w-lg">
-        <h1 className="text-3xl font-bold text-indigo-600 mb-2 text-center">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-blue-50 px-6 py-10 font-inter text-gray-900">
+      <div className="bg-white p-8 rounded-2xl shadow-sm border border-blue-100 w-[90%] max-w-lg">
+        <h1 className="text-4xl md:text-5xl font-bold text-center text-blue-700 mb-4">
           Control Centre
         </h1>
-        <p className="text-center text-gray-500 mb-6">
+        <p className="text-center text-gray-600 mb-10 text-lg">
           Welcome, {user.username} ({user.role})
         </p>
 
@@ -45,7 +45,7 @@ function ControlCentre() {
             <button
               key={link.path}
               onClick={() => navigate(link.path)}
-              className="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transition"
+              className="w-full bg-blue-600 text-white py-3 px-6 rounded-xl font-semibold text-lg hover:bg-blue-700 transition"
             >
               {link.label}
             </button>
@@ -54,7 +54,7 @@ function ControlCentre() {
 
         <button
           onClick={handleLogout}
-          className="w-full mt-6 py-2 rounded-xl border border-indigo-600 text-indigo-600 font-semibold hover:bg-indigo-50 transition"
+          className="w-full mt-8 bg-white border border-blue-600 text-blue-700 px-6 py-3 rounded-xl font-semibold text-lg hover:bg-blue-50 transition"
         >
           Log Out
         </button>

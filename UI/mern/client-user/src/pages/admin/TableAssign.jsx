@@ -114,64 +114,64 @@ function TableAssign() {
 
   if (loading)
     return (
-      <div className="flex items-center justify-center h-screen text-xl">
+      <div className="flex items-center justify-center h-screen text-xl font-inter text-center">
         Loading tables...
       </div>
     );
 
   if (error)
     return (
-      <div className="flex items-center justify-center h-screen text-red-600 text-xl">
+      <div className="flex items-center justify-center h-screen text-red-600 text-xl font-inter text-center">
         Error: {error}
       </div>
     );
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-6">
+    <div className="min-h-screen bg-blue-50 py-10 px-6 font-inter text-gray-900 text-center">
       <button
         onClick={() => navigate("/pages/admin/control")}
-        className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 mb-6"
+        className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 mb-6 text-lg self-start text-left block"
       >
         ← Back to Control Centre
       </button>
 
-      <h1 className="text-4xl font-bold text-center text-indigo-600 mb-10">
+      <h1 className="text-4xl md:text-5xl font-bold text-center text-blue-700 mb-10">
         Assign Tables
       </h1>
 
       {/* Seat modal */}
       {seatModalOpen && selectedTable && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-xl w-80">
-            <h2 className="text-xl font-bold mb-3 text-indigo-700">
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-6">
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-blue-100 w-full max-w-sm text-left">
+            <h2 className="text-2xl font-bold mb-6 text-blue-700">
               Seat Table {selectedTable.tableNumber}
             </h2>
 
-            <label className="block mb-3">
-              <span className="font-semibold">Head count:</span>
+            <label className="block mb-6">
+              <span className="font-semibold text-lg">Head count:</span>
               <input
                 type="number"
                 min="1"
                 value={headCount}
                 onChange={(e) => setHeadCount(Number(e.target.value))}
-                className="w-full border p-2 rounded-lg mt-1"
+                className="w-full border border-blue-100 p-4 rounded-xl mt-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
               />
             </label>
 
-            <div className="flex justify-end gap-3 mt-4">
+            <div className="flex justify-end gap-4 mt-6">
               <button
                 onClick={() => {
                   setSeatModalOpen(false);
                   setSelectedTable(null);
                   setHeadCount(1);
                 }}
-                className="px-4 py-2 bg-gray-300 rounded-lg"
+                className="px-6 py-3 bg-blue-50 border border-blue-100 rounded-xl hover:bg-blue-100 text-lg font-semibold transition"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSeatConfirm}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg"
+                className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 text-lg font-semibold transition"
               >
                 Seat Table
               </button>
@@ -182,27 +182,27 @@ function TableAssign() {
 
       {/* Leave modal */}
       {leaveModalOpen && selectedTable && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-xl w-96">
-            <h2 className="text-xl font-bold mb-3 text-indigo-700">
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-6">
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-blue-100 w-full max-w-md text-left">
+            <h2 className="text-2xl font-bold mb-4 text-blue-700">
               Table {selectedTable.tableNumber} has left?
             </h2>
-            <p className="text-gray-700 mb-4">
+            <p className="text-gray-700 mb-6 text-lg">
               This will mark the table as available and archive its latest order.
             </p>
-            <div className="flex justify-end gap-3 mt-4">
+            <div className="flex justify-end gap-4 mt-6">
               <button
                 onClick={() => {
                   setLeaveModalOpen(false);
                   setSelectedTable(null);
                 }}
-                className="px-4 py-2 bg-gray-300 rounded-lg"
+                className="px-6 py-3 bg-blue-50 border border-blue-100 rounded-xl hover:bg-blue-100 text-lg font-semibold transition"
               >
                 Cancel
               </button>
               <button
                 onClick={handleLeaveConfirm}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg"
+                className="px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 text-lg font-semibold transition"
               >
                 Confirm
               </button>
@@ -212,19 +212,19 @@ function TableAssign() {
       )}
 
       {/* Table cards */}
-      <div className="max-w-5xl mx-auto grid gap-6 md:grid-cols-3">
+      <div className="max-w-5xl mx-auto grid gap-6 md:grid-cols-3 text-left">
         {tables.map((table) => (
           <div
             key={table._id}
-            className={`border rounded-2xl p-6 shadow-sm transition ${table.isOccupied
-                ? "bg-gray-200 text-gray-700"
-                : "bg-white hover:shadow-lg"
+            className={`border rounded-2xl p-8 shadow-sm transition ${table.isOccupied
+              ? "bg-blue-50 text-gray-700 border-blue-100"
+              : "bg-white hover:shadow-md border-blue-100"
               }`}
           >
-            <h2 className="text-2xl font-semibold mb-2">
+            <h2 className="text-2xl font-semibold mb-3">
               Table {table.tableNumber}
             </h2>
-            <p className="text-gray-600 mb-1">
+            <p className="text-gray-600 mb-2 text-lg">
               Status:{" "}
               {table.isOccupied ? (
                 <span className="font-semibold text-red-600">Occupied</span>
@@ -232,7 +232,7 @@ function TableAssign() {
                 <span className="font-semibold text-green-600">Available</span>
               )}
             </p>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 mb-6 text-lg">
               Head count:{" "}
               {table.isOccupied ? table.headCount ?? "Unknown" : "-"}
             </p>
@@ -243,7 +243,7 @@ function TableAssign() {
                   setSelectedTable(table);
                   setLeaveModalOpen(true);
                 }}
-                className="w-full py-2 rounded-lg font-semibold text-white bg-red-600 hover:bg-red-700"
+                className="w-full px-6 py-4 rounded-xl font-semibold text-white text-lg bg-red-600 hover:bg-red-700 transition"
               >
                 Table has left
               </button>
@@ -254,7 +254,7 @@ function TableAssign() {
                   setHeadCount(1);
                   setSeatModalOpen(true);
                 }}
-                className="w-full py-2 rounded-lg font-semibold text-white bg-indigo-600 hover:bg-indigo-700"
+                className="w-full px-6 py-4 rounded-xl font-semibold text-white text-lg bg-blue-600 hover:bg-blue-700 transition"
               >
                 Seat table
               </button>

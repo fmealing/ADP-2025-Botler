@@ -26,7 +26,18 @@ async function startHistory(robotId, action, tableId = null, orderId = null) {
 }
 
 async function findRobotForSeating() {
-  const awaiting = await Robot.findOne({ action: "awaiting instruction" }).sort({
+  const theo = await Robot.findOne({
+    name: "Theo",
+    action: "awaiting instruction",
+  });
+  if (theo) {
+    return { robot: theo, mode: "immediate" };
+  }
+
+  const awaiting = await Robot.findOne({
+    action: "awaiting instruction",
+    name: { $ne: "Theo" },
+  }).sort({
     updatedAt: 1,
   });
   if (awaiting) {
@@ -50,6 +61,7 @@ async function findRobotForSeating() {
 
   return { robot: null, mode: "none" };
 }
+
 
 router.get("/", authOptional, async (req, res) => {
   try {
@@ -148,9 +160,9 @@ router.patch("/:id/seat", auth, async (req, res) => {
 
     if (mode === "immediate") {
       await endCurrentHistory(robot._id);
-      robot.action = "serving";
+      robot.action = "taking order";
       await robot.save();
-      await startHistory(robot._id, "serving", tableId, order._id);
+      await startHistory(robot._id, "taking order", tableId, order._id);
     }
 
     if (mode === "pending") {

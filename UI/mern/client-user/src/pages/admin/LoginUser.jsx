@@ -42,36 +42,38 @@ function LoginUser() {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-      <div className="bg-white rounded-2xl p-8 shadow-lg w-96 text-gray-800">
-        <h2 className="text-2xl font-bold text-center mb-6 text-indigo-600">User Login</h2>
+    <div className="flex items-center justify-center min-h-screen bg-blue-50 px-6 py-10 font-inter text-gray-900">
+      <div className="bg-white rounded-2xl p-8 shadow-sm border border-blue-100 w-full max-w-md text-gray-900">
+        <h2 className="text-4xl md:text-5xl font-bold text-center mb-10 text-blue-700">
+          User Login
+        </h2>
 
         {error && (
-          <div className="bg-red-100 text-red-600 p-3 rounded-lg text-center mb-4">
+          <div className="bg-red-100 text-red-600 p-4 rounded-xl text-center mb-6 text-lg">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-5">
+        <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label className="block mb-1 font-semibold">Username</label>
+            <label className="block mb-2 font-semibold text-lg">Username</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full p-4 border border-blue-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-lg"
               placeholder="Enter username"
               required
             />
           </div>
 
           <div>
-            <label className="block mb-1 font-semibold">Password</label>
+            <label className="block mb-2 font-semibold text-lg">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full p-4 border border-blue-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-lg"
               placeholder="Enter password"
               required
             />
@@ -80,9 +82,9 @@ function LoginUser() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3 rounded-lg font-semibold text-white transition ${loading
-              ? "bg-indigo-300 cursor-not-allowed"
-              : "bg-indigo-600 hover:bg-indigo-700"
+            className={`w-full px-6 py-4 rounded-xl font-semibold text-white text-lg transition ${loading
+              ? "bg-blue-300 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700"
               }`}
           >
             {loading ? "Logging in..." : "Login"}

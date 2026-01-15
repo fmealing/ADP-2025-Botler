@@ -22,7 +22,7 @@ export function useLeaveConfirmation(orderId) {
 
         warningTimer.current = setTimeout(() => {
             setShowInactivity(true);
-        }, 50000);
+        }, 900000);
 
         inactivityTimer.current = setTimeout(async () => {
             if (!orderId) return;
@@ -38,7 +38,7 @@ export function useLeaveConfirmation(orderId) {
             } catch (err) {
                 console.error("Auto-clear failed:", err);
             }
-        }, 60000);
+        }, 960000);
     };
 
     useEffect(() => {

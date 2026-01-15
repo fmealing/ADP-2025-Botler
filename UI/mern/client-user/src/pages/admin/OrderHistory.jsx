@@ -90,7 +90,7 @@ function OrderHistory() {
       list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
     if (sortBy === "oldest") {
-      list.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      list.sort((a, b) => new Date(a.createdAt) - new Date(a.createdAt));
     }
     if (sortBy === "table") {
       list.sort(
@@ -122,44 +122,44 @@ function OrderHistory() {
 
   if (loading)
     return (
-      <div className="flex items-center justify-center h-screen text-xl">
+      <div className="flex items-center justify-center h-screen text-xl font-inter text-center">
         Loading order history...
       </div>
     );
 
   if (error)
     return (
-      <div className="flex items-center justify-center h-screen text-red-600 text-xl">
+      <div className="flex items-center justify-center h-screen text-red-600 text-xl font-inter text-center">
         Error: {error}
       </div>
     );
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-6">
+    <div className="min-h-screen bg-blue-50 py-10 px-6 font-inter text-gray-900 text-center">
       <button
         onClick={() => navigate("/pages/admin/control")}
-        className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 mb-6"
+        className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 mb-6 text-lg self-start text-left block"
       >
         ← Back to Control Centre
       </button>
 
-      <h1 className="text-4xl font-bold text-center text-indigo-600 mb-10">
+      <h1 className="text-4xl md:text-5xl font-bold text-center text-blue-700 mb-10">
         Order History
       </h1>
 
-      <div className="max-w-5xl mx-auto mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="max-w-5xl mx-auto mb-10 grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
         <input
           type="text"
           placeholder="Search by table number..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="border p-3 rounded-lg"
+          className="border border-blue-100 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-lg"
         />
 
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
-          className="border p-3 rounded-lg"
+          className="border border-blue-100 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-lg bg-white"
         >
           <option value="newest">Sort: Newest</option>
           <option value="oldest">Sort: Oldest</option>
@@ -169,7 +169,7 @@ function OrderHistory() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="border p-3 rounded-lg"
+          className="border border-blue-100 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-lg bg-white"
         >
           <option value="all">Filter: All Statuses</option>
           <option value="Pending">Pending</option>
@@ -182,69 +182,64 @@ function OrderHistory() {
         </select>
       </div>
 
-      <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
         {paginated.map((order) => (
           <div
             key={order._id}
-            className="bg-white rounded-2xl shadow-md hover:shadow-xl transition p-6 border"
+            className="bg-white rounded-2xl shadow-sm border border-blue-100 hover:shadow-md transition p-8"
           >
-            <h2 className="text-2xl font-semibold text-indigo-700 mb-3">
+            <h2 className="text-2xl font-semibold text-blue-700 mb-4">
               Order #{order._id.slice(-5)}
             </h2>
 
             <span
-              className={`px-3 py-1 rounded-full text-sm font-semibold ${statusColors[order.status]}`}
+              className={`px-4 py-2 rounded-full text-base font-semibold ${statusColors[order.status]}`}
             >
               {order.status}
             </span>
 
-            <p className="text-gray-700 mt-3">
+            <p className="text-gray-700 mt-4 text-lg">
               <span className="font-semibold">Table:</span>{" "}
               {order.table?.tableNumber}
             </p>
 
-            <p className="text-gray-700">
-              <span className="font-semibold">Menu:</span>{" "}
-              {order.menu?.name || "None"}
-            </p>
-
-            <p className="text-gray-700">
+            <p className="text-gray-700 text-lg">
               <span className="font-semibold">Robot:</span>{" "}
               {order.waiter?.name || "None"}
             </p>
 
-            <p className="text-gray-700">
+            <p className="text-gray-700 text-lg">
               <span className="font-semibold">Created:</span>{" "}
               {new Date(order.createdAt).toLocaleString()}
             </p>
 
-            <p className="text-gray-700 mb-4">
+            <p className="text-gray-700 mb-6 text-lg">
               <span className="font-semibold">Updated:</span>{" "}
               {new Date(order.updatedAt).toLocaleString()}
             </p>
 
             {user?.role === "admin" && (
-              <div className="border-t pt-4 mt-4">
-                <h3 className="text-xl font-semibold text-indigo-700 mb-3">
+              <div className="border-t border-blue-100 pt-6 mt-6">
+                <h3 className="text-xl font-semibold text-blue-700 mb-4">
                   Items
                 </h3>
 
                 {order.items?.length > 0 ? (
-                  <ul className="space-y-2">
+                  <ul className="space-y-3">
                     {order.items.map((item) => (
                       <li
                         key={item._id}
-                        className="bg-gray-100 px-4 py-2 rounded-xl shadow-sm"
+                        className="bg-blue-50 px-6 py-4 rounded-2xl border border-blue-100"
                       >
-                        <p className="font-semibold text-gray-800">
+                        <p className="font-semibold text-gray-800 text-lg">
                           {item.menuItem?.name}
                         </p>
-                        <p className="text-gray-600">
+                        <p className="text-gray-600 text-lg">
                           Qty: {item.quantity} — £
                           {item.menuItem?.price?.toFixed(2)}
                         </p>
                         {item.specialInstructions && (
-                          <p className="text-sm text-gray-500 italic">
+                          <p className="text-base text-gray-500 italic">
                             "{item.specialInstructions}"
                           </p>
                         )}
@@ -252,17 +247,17 @@ function OrderHistory() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-gray-500">No items added.</p>
+                  <p className="text-gray-500 text-lg">No items added.</p>
                 )}
 
-                <p className="text-right mt-4 text-lg font-bold text-indigo-700">
+                <p className="text-right mt-6 text-xl font-semibold text-blue-700">
                   Total: £{order.totalPrice?.toFixed(2) || "0.00"}
                 </p>
 
                 {order.status === "Submitted" && (
                   <button
                     onClick={() => handleSendOrder(order._id)}
-                    className="mt-4 w-full bg-indigo-600 text-white py-2 rounded-xl hover:bg-indigo-700 font-semibold"
+                    className="mt-6 w-full bg-blue-600 text-white px-6 py-4 rounded-xl hover:bg-blue-700 font-semibold text-lg transition"
                   >
                     Click to Send Robot to Table (Food Loaded)
                   </button>
@@ -278,19 +273,19 @@ function OrderHistory() {
           <button
             disabled={page === 1}
             onClick={() => setPage((p) => p - 1)}
-            className="px-4 py-2 bg-gray-300 rounded-lg disabled:opacity-50"
+            className="px-6 py-3 bg-blue-50 border border-blue-100 rounded-xl disabled:opacity-50 text-lg font-semibold hover:bg-blue-100 transition"
           >
             Prev
           </button>
 
-          <span className="px-4 py-2 font-semibold">
+          <span className="px-6 py-3 font-semibold text-lg">
             Page {page} / {totalPages}
           </span>
 
           <button
             disabled={page === totalPages}
             onClick={() => setPage((p) => p + 1)}
-            className="px-4 py-2 bg-gray-300 rounded-lg disabled:opacity-50"
+            className="px-6 py-3 bg-blue-50 border border-blue-100 rounded-xl disabled:opacity-50 text-lg font-semibold hover:bg-blue-100 transition"
           >
             Next
           </button>

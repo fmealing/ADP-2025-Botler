@@ -20,25 +20,27 @@ function UserNavbar() {
   };
 
   return (
-    <nav className="flex justify-between items-center bg-indigo-600 text-white px-6 py-3 shadow-md">
+    <nav className="flex justify-between items-center px-6 py-4 bg-blue-700 text-white font-inter shadow-sm">
       <button
         onClick={() => navigate("/pages/admin/control")}
-        className="text-xl font-bold hover:text-indigo-200 transition"
+        className="font-bold text-xl tracking-wide hover:text-blue-200 transition"
       >
         Botler Control
       </button>
 
       {user && (
-        <div className="flex items-center gap-6">
-          <span className="text-sm font-medium">
-            {user.username} ({user.role})
-          </span>
-          <button
-            onClick={handleLogout}
-            className="bg-white text-indigo-600 font-semibold px-3 py-1 rounded-xl hover:bg-indigo-100 transition"
-          >
-            Logout
-          </button>
+        <div className="flex items-end gap-6">
+          <div className="flex flex-col items-end sm:flex-row sm:items-center sm:gap-6">
+            <span className="text-base font-medium">
+              {user.username} ({user.role})
+            </span>
+            <button
+              onClick={handleLogout}
+              className="font-semibold text-lg hover:text-blue-200 transition"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       )}
     </nav>

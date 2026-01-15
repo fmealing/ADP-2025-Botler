@@ -10,6 +10,8 @@ import { admin } from "../middleware/admin.js";
 
 const router = express.Router();
 
+const TERMINAL_STATUSES = ["Completed", "Cancelled", "Paid", "Archived"];
+
 async function endCurrentHistory(robotId) {
   await RobotHistory.updateOne(
     { robot: robotId, endedAt: null },
@@ -176,6 +178,16 @@ router.patch("/:id", authOptional, async (req, res) => {
       order.items = [];
     } else if (action === "submit") {
       order.status = "Submitted";
+
+      if (order.waiter) {
+        const robot = await Robot.findById(order.waiter);
+        if (robot) {
+          await endCurrentHistory(robot._id);
+          robot.action = "fetching order";
+          await robot.save();
+          await startHistory(robot._id, "fetching order", order.table, order._id);
+        }
+      }
     } else {
       return res.status(400).json({ message: "Invalid action" });
     }
@@ -239,11 +251,36 @@ router.patch("/:id/admin", auth, async (req, res) => {
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ message: "Order not found" });
 
+    const previousStatus = order.status;
+    const previousWaiter = order.waiter;
+
     if (status) order.status = status;
     if (waiter) order.waiter = waiter;
 
-    const updated = await order.save();
-    const populatedOrder = await updated.populate([
+    await order.save();
+
+    if (
+      status &&
+      TERMINAL_STATUSES.includes(status) &&
+      previousWaiter &&
+      !TERMINAL_STATUSES.includes(previousStatus)
+    ) {
+      const robot = await Robot.findById(previousWaiter);
+      if (robot) {
+        await endCurrentHistory(robot._id);
+        robot.action = "awaiting instruction";
+        robot.pendingAssignment = { table: null, order: null };
+        await robot.save();
+        await startHistory(robot._id, "awaiting instruction");
+      }
+
+      if (status === "Completed" && !order.completedAt) {
+        order.completedAt = new Date();
+        await order.save();
+      }
+    }
+
+    const populatedOrder = await Order.findById(order._id).populate([
       { path: "user", select: "username" },
       { path: "table", select: "tableNumber" },
       { path: "waiter", select: "name" },
@@ -301,6 +338,5 @@ router.get("/table/:tableId/active", authOptional, async (req, res) => {
     });
   }
 });
-
 
 export default router;
