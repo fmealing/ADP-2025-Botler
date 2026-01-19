@@ -1,22 +1,20 @@
 import { useEffect, useState } from "react";
 import { useLeaveConfirmation } from "./hooks/useLeaveConfirmation";
+import { useDragScroll } from "./hooks/useDragScroll";
 import Navbar from "./components/Navbar";
 import { Outlet } from "react-router-dom";
 
 const App = () => {
-  // initialise orderId for global leave confirmation
   const [orderId, setOrderId] = useState(localStorage.getItem("currentOrderId"));
+  const scrollRef = useDragScroll(true);
 
-  // keep orderId synced with localStorage changes (for multi-tab and same-tab updates)
   useEffect(() => {
     const updateOrderId = () => {
       setOrderId(localStorage.getItem("currentOrderId"));
     };
 
-    // listen for updates from other tabs
     window.addEventListener("storage", updateOrderId);
 
-    // listen for updates in the same tab
     const originalSetItem = localStorage.setItem;
     localStorage.setItem = function (key, value) {
       originalSetItem.apply(this, arguments);
@@ -25,24 +23,24 @@ const App = () => {
 
     return () => {
       window.removeEventListener("storage", updateOrderId);
-      localStorage.setItem = originalSetItem; // restore default
+      localStorage.setItem = originalSetItem;
     };
   }, []);
 
-  // always mount the hook (it internally handles missing orderId)
   const { LeaveModal, InactivityModal, RequestLeave } = useLeaveConfirmation(orderId);
 
   return (
-    <div className="w-full p-6">
-      {/* global navigation bar with Botler button */}
-      <Navbar RequestLeave={RequestLeave} />
+    <div ref={scrollRef} className="touch-scroll w-full h-screen flex flex-col">
+      <div className="sticky top-0 z-50 bg-white">
+        <Navbar RequestLeave={RequestLeave} />
+      </div>
 
-      {/* global modals for leave confirmation and inactivity warning */}
       <LeaveModal />
       <InactivityModal />
 
-      {/* nested routes render here */}
-      <Outlet context={{ RequestLeave }} />
+      <div className="p-6 flex-1">
+        <Outlet context={{ RequestLeave }} />
+      </div>
     </div>
   );
 };

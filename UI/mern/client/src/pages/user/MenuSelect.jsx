@@ -25,20 +25,20 @@ function MenuPage() {
 
   if (loading)
     return (
-      <div className="flex items-center justify-center h-screen text-xl font-inter">
+      <div className="flex items-center justify-center py-20 select-none text-xl font-inter">
         Loading menus...
       </div>
     );
 
   if (error)
     return (
-      <div className="flex items-center justify-center h-screen text-red-600 text-xl font-inter">
+      <div className="flex items-center justify-center py-20 select-none text-red-600 text-xl font-inter">
         Error: {error}
       </div>
     );
 
   return (
-    <div className="min-h-screen bg-blue-50 py-10 px-6 font-inter text-gray-900">
+    <div className="select-none min-h-full bg-blue-50 py-10 px-6 font-inter text-gray-900">
       <h1 className="text-4xl md:text-5xl font-bold text-blue-700 mb-10">
         Select a Menu
       </h1>
@@ -48,7 +48,7 @@ function MenuPage() {
           <div
             key={menu._id}
             onClick={() => navigate(`/menu/${menu._id}/table`)}
-            className="cursor-pointer border border-blue-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition bg-white"
+            className="cursor-pointer select-none border border-blue-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition bg-white"
           >
             <h2 className="text-2xl font-semibold mb-3 text-blue-700">
               {menu.name}

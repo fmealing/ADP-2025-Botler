@@ -88,14 +88,14 @@ function CheckoutSummaryPage() {
 
     if (loading)
         return (
-            <div className="flex items-center justify-center h-screen text-xl font-inter text-center">
+            <div className="flex items-center justify-center py-20 select-none text-xl font-inter text-center">
                 Loading order...
             </div>
         );
 
     if (error)
         return (
-            <div className="flex items-center justify-center h-screen text-red-600 text-xl font-inter text-center">
+            <div className="flex items-center justify-center py-20 select-none text-red-600 text-xl font-inter text-center">
                 Error: {error}
             </div>
         );
@@ -103,7 +103,7 @@ function CheckoutSummaryPage() {
     if (!order) return <p className="text-center mt-10 font-inter text-lg">No order found.</p>;
 
     return (
-        <div className="min-h-screen bg-blue-50 py-10 px-6 font-inter text-gray-900 text-center">
+        <div className="select-none bg-blue-50 py-10 px-6 font-inter text-gray-900 text-center">
             <button
                 onClick={() => navigate(-1)}
                 className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 mb-6 text-lg self-start text-left block"
@@ -115,42 +115,42 @@ function CheckoutSummaryPage() {
                 Order Summary
             </h1>
 
-            <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-blue-100 p-8 text-left">
+            <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-blue-100 p-8 text-left flex flex-col max-h-[75vh]">
                 <h2 className="text-2xl font-semibold mb-6 text-blue-700">
                     Table #{order.table?.tableNumber || "?"}
                 </h2>
                 {order.items.length === 0 ? (
                     <p className="text-gray-500 text-lg">No items in this order.</p>
                 ) : (
-                    <ul className="divide-y divide-blue-100">
-                        {order.items.map((item) => (
-                            <li
-                                key={item._id}
-                                className="flex justify-between items-start py-4"
-                            >
-                                <div>
-                                    <p className="font-semibold text-lg">{item.menuItem?.name}</p>
-                                    <p className="text-base text-gray-600">
-                                        Qty: {item.quantity}
-                                        {item.specialInstructions && (
-                                            <span> • {item.specialInstructions}</span>
-                                        )}
-                                    </p>
-                                </div>
-                                <div className="flex items-center space-x-4">
-                                    <p className="text-blue-700 font-semibold text-lg">
-                                        £{(item.menuItem?.price * item.quantity).toFixed(2)}
-                                    </p>
-                                    <button
-                                        onClick={() => handleRemoveItem(item.menuItem._id)}
-                                        className="text-red-500 hover:text-red-700 text-lg"
-                                    >
-                                        ✕
-                                    </button>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
+                    <div className="flex-1 overflow-y-auto pb-4 touch-pan-y">
+                        <ul className="divide-y divide-blue-100">
+                            {order.items.map((item) => (
+                                <li
+                                    key={item._id}
+                                    className="select-none flex justify-between items-start py-4">
+                                    <div>
+                                        <p className="font-semibold text-lg">{item.menuItem?.name}</p>
+                                        <p className="text-base text-gray-600">
+                                            Qty: {item.quantity}
+                                            {item.specialInstructions && (
+                                                <span> • {item.specialInstructions}</span>
+                                            )}
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center space-x-4">
+                                        <p className="text-blue-700 font-semibold text-lg">
+                                            £{(item.menuItem?.price * item.quantity).toFixed(2)}
+                                        </p>
+                                        <button
+                                            onClick={() => handleRemoveItem(item.menuItem._id)}
+                                            className="text-red-500 hover:text-red-700 text-lg">
+                                            ✕
+                                        </button>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                 )}
 
                 <hr className="my-8 border-blue-100" />
@@ -162,7 +162,10 @@ function CheckoutSummaryPage() {
 
                 <div className="flex justify-end mt-8">
                     <button
-                        onClick={handlePlaceOrder}
+                        onClick={async () => {
+                            localStorage.setItem("playThankYouVoice", "1");
+                            await handlePlaceOrder();
+                        }}
                         className="bg-green-600 text-white px-8 py-4 rounded-xl hover:bg-green-700 text-lg font-semibold"
                     >
                         Place Order

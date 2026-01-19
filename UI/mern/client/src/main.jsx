@@ -9,7 +9,6 @@ import App from "./App";
 import WelcomePage from "./pages/user/Welcome.jsx";
 import MenuPage from "./pages/user/MenuSelect.jsx";
 import MenuItemsPage from "./pages/user/MenuItems.jsx";
-import SubcategoryItemsPage from "./pages/user/SubcategoryItems.jsx";
 import TableSelectPage from "./pages/user/TableSelect.jsx";
 import CheckoutSummaryPage from "./pages/user/CheckoutSummary.jsx";
 import ThankYou from "./pages/user/ThankYou.jsx";

@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { useNavigate, useParams, useOutletContext } from "react-router-dom";
 import { updateOrderItems } from "../../utils/api";
+import { useDragScroll } from "../../hooks/useDragScroll";
+//import { useTTS } from "../../hooks/useTTS";
 
 function MenuItemsPage() {
   const { RequestLeave } = useOutletContext();
@@ -14,13 +16,63 @@ function MenuItemsPage() {
   const [order, setOrder] = useState([]);
   const [breadcrumbs, setBreadcrumbs] = useState([]);
   const [orderId, setOrderId] = useState(null);
+  //const { ready, speakAsync } = useTTS({ lang: "en-GB", rate: 1.1 });
+
+  const audioRef = useRef(null);
+  const modalScrollRef = useDragScroll(!!selectedItem, { allowLabelDrag: true });
 
   useEffect(() => {
     const storedId = localStorage.getItem("currentOrderId");
     if (storedId) setOrderId(storedId);
   }, []);
 
-  // ✅ FIX: hydrate existing order items when returning from checkout
+  useEffect(() => {
+    audioRef.current = new Audio("/audio/menu.mp3");
+    audioRef.current.preload = "auto";
+  }, []);
+
+  /*  useEffect(() => {
+      const run = async() =>{
+        const shouldPlay = localStorage.getItem("playTableSelectVoice") === "1";
+  
+        if (shouldPlay && ready) {
+          localStorage.removeItem("playTableSelectVoice");
+          await speakAsync("Please select from our starters. Appetizers and small bites to begin your meal. And our Traditional and modern Greek main dishes... May I also reccomened, our Greek House lager, Mythos?");
+        }
+      };
+      run();
+  
+    }, [speakAsync]); 
+    
+    Note: This is old code which uses browser TTS for speech
+    */
+
+  useEffect(() => {
+    const run = async () => {
+      const shouldPlay = localStorage.getItem("playTableSelectVoice") === "1";
+
+      if (!shouldPlay) return;
+
+      localStorage.removeItem("playTableSelectVoice");
+
+      try {
+        const audio = audioRef.current;
+        if (!audio) throw new Error("Audio not initialized");
+
+        audio.currentTime = 0;
+        await audio.play();
+
+        await new Promise((resolve) => {
+          audio.onended = resolve;
+          audio.onerror = resolve;
+        });
+      } catch (err) {
+        console.warn("Audio play failed:", err);
+      }
+    };
+    run();
+  }, []);
+
   useEffect(() => {
     async function loadExistingOrder() {
       if (!orderId) return;
@@ -107,14 +159,14 @@ function MenuItemsPage() {
 
   if (loading)
     return (
-      <div className="flex items-center justify-center h-screen text-xl font-inter text-center">
+      <div className="flex items-center justify-center select-none py-20 text-xl font-inter text-center">
         Loading menu items...
       </div>
     );
 
   if (error)
     return (
-      <div className="flex items-center justify-center h-screen text-red-600 text-xl font-inter text-center">
+      <div className="flex items-center justify-center select-none py-20 text-red-600 text-xl font-inter text-center">
         Error: {error}
       </div>
     );
@@ -122,7 +174,7 @@ function MenuItemsPage() {
   if (!menu) return <p className="mt-10 font-inter text-center">No menu found</p>;
 
   return (
-    <div className="min-h-screen bg-blue-50 py-10 px-6 font-inter text-gray-900 text-center">
+    <div className="select-none bg-blue-50 py-10 px-6 font-inter text-gray-900 text-center">
       <button
         onClick={() => {
           if (subId) {
@@ -182,7 +234,7 @@ function MenuItemsPage() {
                     `/menu/${menu._id}/table/${menu.tableId || tableId || "none"}/sub/${sub._id}`
                   )
                 }
-                className="cursor-pointer bg-white rounded-2xl overflow-hidden border border-blue-100 shadow-sm hover:shadow-md transition"
+                className="cursor-pointer select-none bg-white rounded-2xl overflow-hidden border border-blue-100 shadow-sm hover:shadow-md transition"
               >
                 {sub.picture && (
                   <div className="h-56 w-full overflow-hidden">
@@ -227,7 +279,16 @@ function MenuItemsPage() {
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           {selectedItem && (
-            <Dialog.Panel className="w-full max-w-lg rounded-2xl bg-white p-8 shadow-lg text-center">
+            <Dialog.Panel ref={modalScrollRef} className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-8 shadow-lg text-center">
+              {selectedItem.picture && (
+                <div className="mb-5 w-full h-56 overflow-hidden rounded-xl">
+                  <img
+                    src={selectedItem.picture}
+                    alt={selectedItem.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
               <Dialog.Title className="text-2xl font-semibold mb-4">
                 {selectedItem.name}
               </Dialog.Title>
@@ -273,7 +334,7 @@ function SubcategorySection({ sub, onSelectItem, tableId, menuId }) {
             <div
               key={item._id}
               onClick={() => onSelectItem(item)}
-              className="cursor-pointer bg-white border border-blue-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition"
+              className="cursor-pointer select-none bg-white border border-blue-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition"
             >
               {item.picture ? (
                 <div className="h-48 w-full overflow-hidden">
@@ -313,7 +374,7 @@ function SubcategorySection({ sub, onSelectItem, tableId, menuId }) {
               onClick={() =>
                 navigate(`/menu/${menuId}/table/${tableId || "none"}/sub/${child._id}`)
               }
-              className="cursor-pointer bg-white rounded-2xl overflow-hidden border border-blue-100 shadow-sm hover:shadow-md transition"
+              className="cursor-pointer select-none bg-white rounded-2xl overflow-hidden border border-blue-100 shadow-sm hover:shadow-md transition"
             >
               {child.picture ? (
                 <div className="h-48 w-full overflow-hidden">
