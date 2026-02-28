@@ -54,7 +54,7 @@ The system follows a layered architecture:
 
 ## Hardware
 
-![Physical Robot Build](media/botler_real.jpg)
+![Physical Robot Build](media/botler_real.png)
 
 - Mobile robot chassis
 - DC motors with motor drivers
