@@ -20,7 +20,7 @@ The objective of Botler was to design and implement a fully autonomous robot cap
 - Executing path planning between service stations
 - Operating reliably under real-world constraints
 
-The emphasis was on robustness, modxwular architecture, and clean integration rather than a proof-of-concept prototype.
+The emphasis was on robustness, modular architecture, and clean integration rather than a proof-of-concept prototype.
 
 ---
 
